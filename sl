@@ -3,7 +3,7 @@
 VERSION="0.32"
 LANGUAGE_PATH="./language/target/simplelanguage-$VERSION-SNAPSHOT.jar"
 LAUNCHER_PATH="./launcher/target/launcher-$VERSION-SNAPSHOT.jar"
-MAIN_CLASS="com.oracle.truffle.sl.launcher.SLMain"
+MAIN_CLASS="SLMain"
 
 #######################################################################
 #            Check if the language and launcher jars exist            #
