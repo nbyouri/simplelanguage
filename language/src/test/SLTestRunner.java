@@ -1,4 +1,4 @@
-package test;/*
+/*
  * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -80,9 +80,8 @@ import org.junit.runners.model.InitializationError;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import sl.SLLanguage;
 import sl.builtins.SLBuiltinNode;
-import test.SLTestRunner.TestCase;
 
-public class SLTestRunner extends ParentRunner<TestCase> {
+public class SLTestRunner extends ParentRunner<SLTestRunner.TestCase> {
 
     private static final String SOURCE_SUFFIX = ".sl";
     private static final String INPUT_SUFFIX = ".input";

@@ -62,6 +62,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.nodes.NodeUtil;
 import sl.builtins.SLBuiltinNode;
 import sl.builtins.SLDefineFunctionBuiltin;
 import sl.builtins.SLNanoTimeBuiltin;
@@ -153,7 +154,7 @@ import sl.runtime.SLNull;
  * {@link SLWhileNode while} with {@link SLBreakNode break} and {@link SLContinueNode continue},
  * {@link SLReturnNode return}.
  * <li>Debugging control: {@link SLDebuggerNode debugger} statement uses
- * {@link DebuggerTags#AlwaysHalt} tag to halt the execution when run under the debugger.
+ * {@link DebuggerTags} tag to halt the execution when run under the debugger.
  * <li>Function calls: {@link SLInvokeNode invocations} are efficiently implemented with
  * {@link SLDispatchNode polymorphic inline caches}.
  * <li>Object access: {@link SLReadPropertyNode} uses {@link SLReadPropertyCacheNode} as the
@@ -250,6 +251,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
              */
             evalMain = new SLEvalRootNode(this, null, null, null, "[no_main]", functions);
         }
+        NodeUtil.printCompactTree(System.out, evalMain);
         return Truffle.getRuntime().createCallTarget(evalMain);
     }
 
