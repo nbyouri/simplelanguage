@@ -14,7 +14,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <includes>
+            <skipTests>true</skipTests>
+            <includes>
             <include>**/*TestSuite.java</include>
             <include>**/*Test.java</include>
           </includes>
@@ -84,6 +85,14 @@
               </goals>
             </execution>
           </executions>
+          <configuration>
+            <sourceDirectory>src/main/java/sl/parser</sourceDirectory>
+            <includes>
+              <include>**/uri.jj</include>
+            </includes>
+                <outputDirectory>src/main/java</outputDirectory>
+              <!--<isStatic>false</isStatic>-->
+          </configuration>
         </plugin>
       </plugins>
     <pluginManagement>
