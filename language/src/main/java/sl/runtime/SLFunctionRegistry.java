@@ -107,7 +107,7 @@ public final class SLFunctionRegistry {
     }
 
     public void register(Source newFunctions) {
-        register(new Parser(newFunctions.getInputStream()).parseURI(language, newFunctions));
+        register(new Parser(newFunctions.getInputStream()).parseUri(language, newFunctions));
     }
 
     /**

@@ -23,14 +23,14 @@ import sl.nodes.SLStatementNode;
 public class Parser {
     SLNodeFactory factory = null;
 
-    public Map<String, SLRootNode> parseURI(Source source) {
-        return parseURI(null, source);
+    public Map<String, SLRootNode> parseUri(Source source) {
+        return parseUri(null, source);
     }
 
-    public Map<String, SLRootNode> parseURI(SLLanguage language, Source source) {
+    public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) {
         this.factory = new SLNodeFactory(language, source);
         try {
-            this.translationUnit();
+            this.Uri();
         } catch (Exception e) {
             System.out.println("Failed to parse file!");
             e.printStackTrace();
@@ -75,6 +75,9 @@ TOKEN:
 | < IF: "if" >
 | < ELSE: "else" >
 | < WHILE: "while" >
+| < DEBUGGER: "debugger" >
+| < BREAK: "break" >
+| < CONTINUE: "continue" >
 }
 
 // Operators (these could be combined with the reserved words)
@@ -125,7 +128,7 @@ TOKEN:
 // Literals
 TOKEN:
 {
-  < INT_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
+  < NUMERIC_LITERAL: ("0" | <NON_ZERO_DIGIT> (<DIGIT>)*) >
 | < STRING_LITERAL: "\"" (<ESC> | ~["\"","\\","\n","\r"])* "\"" >
 | < #ESC: "\\" ["n","t","b","r","f","\\","'","\""] >
 }
@@ -146,11 +149,11 @@ TOKEN:
 
 // Parse a compilation unit
 //       translationUnit ::= {function}
-void translationUnit(): {}
+void Uri(): {}
 {
     try {
         (
-            function()
+            Function()
         )*
     } catch (ParseException e) {
         System.out.println("Failed to parse translationUnit");
@@ -159,33 +162,9 @@ void translationUnit(): {}
 }
 
 
-//// Parse a qualified identifier.
-////   qualifiedIdentifier ::= IDENTIFIER {DOT IDENTIFIER}
-//Node qualifiedIdentifier(): {
-//    String qualifiedIdentifier = "";
-//}
-//{
-//    try {
-//        <IDENTIFIER>
-//        {
-//            qualifiedIdentifier = token.image;
-//        }
-//        (
-//            <DOT> <IDENTIFIER>
-//            { qualifiedIdentifier += "." + token.image; }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse qualifiedIdentifier");
-//        e.printStackTrace();
-//    }
-//    { return new QualifiedIdentifier(qualifiedIdentifier); }
-//}
-
-
 // Parse a function
 //      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN block
-void function(): {}
+void Function(): {}
 {
     try {
             <FUNCTION>
@@ -204,14 +183,13 @@ void function(): {}
         System.out.println("Failed to parse Function");
         e.printStackTrace();
     }
-    { factory.finishFunction(block()); }
+    { factory.finishFunction(Block(false)); }
 }
 
 
 // Parse a block
 //      Block ::= LCURLY {blockStatement} RCURLY
-// todo check inloop for break and continue
-SLStatementNode block(): {
+SLStatementNode Block(boolean inLoop): {
     SLStatementNode node = null;
     List<SLStatementNode> body = new ArrayList<SLStatementNode>();
     factory.startBlock();
@@ -221,8 +199,8 @@ SLStatementNode block(): {
     try {
         <LCURLY> { start = token.charPos; }
         (
-            node = statement()
-            { body.add(node); }// TODO blockStatement?
+            node = Statement(inLoop)
+            { body.add(node); }
         )*
         <RCURLY>
     } catch (ParseException e) {
@@ -234,83 +212,6 @@ SLStatementNode block(): {
 }
 
 //
-//// Parse a  blockStatement
-////      blockStatement ::= variableDeclarator | statement
-//Node blockStatement(): {
-//    Node statement = null;
-//}
-//{
-//    try {
-//        LOOKAHEAD ( <IDENTIFIER> <ASSIGN> )
-//        statement = variableDeclarator()
-//        | statement =  statement()
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse blockStatement");
-//        e.printStackTrace();
-//    }
-//    { return statement; }
-//}
-//
-//// Parse a variableDeclarator
-////      variableDeclarator ::= IDENTIFIER [ASSIGN expression] SEMI
-//Variable variableDeclarator(): {Node expr = null; int line = 0; String name = ""; String value = ""; }
-//{
-//    try {
-//         <IDENTIFIER> { line = token.beginLine; name = token.image; }
-//         [
-//            <ASSIGN> expr = expression() { value = expr.toString(); }
-//         ]
-//         <SEMI>
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse variableDeclarator for variable " + name);
-//        e.printStackTrace();
-//    }
-//    { return new Variable(name, value); }
-//}
-//
-//// Parse arguments.
-////      arguments ::= LPAREN [expression {COMMA expression}] RPAREN
-//ArrayList<Node> arguments(): {
-//    ArrayList<Node> args = new ArrayList<Node>();
-//    Node anExpression = null;
-//}
-//{
-//    try {
-//        <LPAREN>
-//        [
-//            anExpression = expression() { args.add( anExpression ); }
-//            (
-//                <COMMA> anExpression = expression()
-//                { args.add( anExpression ); }
-//            )*
-//        ]
-//        <RPAREN>
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse arguments");
-//        e.printStackTrace();
-//    }
-//    { return args; }
-//}
-//
-//// Parse a parenthesized expression.
-////   parExpression ::= LPAREN expression RPAREN
-//private Node parExpression(): {
-//    Node expr = null;
-//
-//}
-//{
-//    try {
-//        <LPAREN> expr = expression() <RPAREN>
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse parExpression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
 //
 // Parse a statement
 //     statement ::= block
@@ -319,281 +220,244 @@ SLStatementNode block(): {
 //                | RETURN [expression] SEMI
 //                | SEMI
 //                | expression SEMI // TODO validate side effects
-SLStatementNode statement(): {
-    SLStatementNode stmt = null;
-//    Node expr = null;
-//    Node cond = null;
-//    Node body = null;
-//    Node ifel = null;
+SLStatementNode Statement(boolean inLoop): {
+    SLStatementNode result = null;
+    SLExpressionNode expr = null;
+    SLStatementNode body = null;
+    SLStatementNode elsePart = null;
 }
 {
     try {
-//        stmt = block()
-//
-//        | <IF> { cond = parExpression(); body = statement();}
-//        [ LOOKAHEAD( <ELSE> )
-//            <ELSE> ifel = statement()
-//        ]
-//        { stmt = new If(cond, body, ifel); }
-//
-//        | <WHILE>
-//            cond = parExpression()
-//            body = statement()
-//        { stmt = new While(cond, body); }
-//
-        <RETURN>    { Token returnToken = token; SLExpressionNode value = null; }
-        [
-            value = literal()
-        ]
-        <SEMI>
-        { stmt = factory.createReturn(returnToken, value); }
-//
-//        | stmt = expression()
-//        <SEMI>
+        <WHILE> { Token whileToken = token; }
+        <LPAREN> expr = Expression() <RPAREN>
+        body = Block(true)
+        { result = factory.createWhile(whileToken, expr, body); }
+
+        | <BREAK> { if (inLoop) {
+                        result = factory.createBreak(token);
+                    } else {
+                        System.out.println("Break used out of a loop!");
+                    }
+                  }
+          <SEMI>
+
+        | <CONTINUE> { if (inLoop) {
+                           result = factory.createContinue(token);
+                       } else {
+                           System.out.println("Continue used out of a loop!");
+                       }
+                     }
+          <SEMI>
+
+        | <IF> { Token ifToken = token; }
+          <LPAREN> expr = Expression() <RPAREN>
+          body = Block(inLoop)
+          [ LOOKAHEAD( <ELSE> )
+            <ELSE>
+            elsePart = Block(inLoop)
+          ]
+          { result = factory.createIf(ifToken, expr, body, elsePart); }
+
+        | <RETURN> { Token returnToken = token; }
+          [
+            expr = Expression()
+          ]
+          { result = factory.createReturn(returnToken, expr); }
+          <SEMI>
+
+        | result = Expression()
+          <SEMI>
+
+        | <DEBUGGER>
+          { result = factory.createDebugger(token); }
+          <SEMI>
     } catch (ParseException e) {
         System.out.println("Failed to parse statement");
         e.printStackTrace();
     }
-    { return stmt; }
+    { return result; }
 }
-//
-//// Parse an expression
-////  expression ::= assignmentExpression
-//Node expression(): {
-//    Node expr = null; String id = null; ArrayList<String> args = null;
-//}
-//{
-//    try {
-//        expr = assignmentExpression()
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse an expression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
-//
-//// Parse an assignment expression.
-////      assignmentExpression ::= conditionalOrExpression  // level 13
-////                               [(ASSIGN) assignmentExpression]
-//Node assignmentExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = conditionalOrExpression()
-//        [
-//            <ASSIGN>
-//            rhs = assignmentExpression()
-//            { lhs = new Variable(lhs.toString(), rhs.toString()); }
-//        ]
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse assignmentExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a conditional-or expression.
-////      conditionalOrExpression ::= conditionalAndExpression // level 11
-////                                  {LOR conditionalAndExpression}
-//Node conditionalOrExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = conditionalAndExpression()
-//        (
-//            <LOR>
-//            rhs = conditionalAndExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LOR]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse conditionalOrExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a conditional-and expression.
-//// conditionalAndExpression ::= inclusiveOrExpression // level 10
-////                              {LAND inclusiveOrExpression}
-//Node conditionalAndExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = equalityExpression()
-//        (
-//            <LAND>
-//            rhs = equalityExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LAND]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse conditionalAndExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//
-//// Parse an equality expression.
-////  equalityExpression ::= relationalExpression  // level 6
-////                          {(EQUAL|NOT_EQUAL) relationalExpression}
-//Node equalityExpression(): {
-//    Node lhs = null, rhs = null;
-//    String op = null;
-//}
-//{
-//    try {
-//        lhs = relationalExpression()
-//        (
-//            <EQUAL>
-//            rhs = relationalExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[EQUAL]); } |
-//            <NOT_EQUAL>
-//            rhs = relationalExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[NOT_EQUAL]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse equalityExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a relational expression.
-////
-////   relationalExpression ::= primary  // level 5
-////                          [ (GT | LT | GE | LE) primary
-//Node relationalExpression(): {
-//    Node lhs = null, rhs = null;
-//    String op = null;
-//}
-//{
-//    try {
-//        lhs = additiveExpression()
-//        [
-//            <GT>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[GT]); } |
-//            <LT>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LT]); } |
-//            <GE>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[GE]); } |
-//            <LE>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LE]); }
-//        ]
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse relationalExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse an additive expression.
-////      additiveExpression ::= multiplicativeExpression // level 3
-////                          {(PLUS|MINUS) multiplicativeExpression}
-//Node additiveExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = multiplicativeExpression()
-//        (
-//            <PLUS>
-//            rhs = multiplicativeExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[PLUS]); } |
-//            <MINUS>
-//            rhs = multiplicativeExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[MINUS]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse additiveExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a multiplicative expression.
-////  multiplicativeExpression ::= unaryExpression  // level 2
-////                              {(STAR|DIV) unaryExpression}
-//Node multiplicativeExpression(): {
-//    int line = 0;
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = primary()
-//        (
-//            <STAR>
-//            rhs = primary()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[STAR]); } |
-//            <DIV>
-//            rhs = primary()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[DIV]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse multiplicativeExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//
-////  Parse an primary
-////  primary ::= parExpression
-////               | IDENTIFIER [arguments]
-////               | IDENTIFIER
-////               | literal
-////               | qualifiedIdentifier // arguments?
-//Node primary(): {
-//    String id = null; ArrayList<Node> args = null;
-//    Node expr = null, node = null;
-//}
-//{
-//    try {
-//        expr = parExpression()
-//
-//        | LOOKAHEAD( <IDENTIFIER> <DOT> )
-//        expr = qualifiedIdentifier()
-//        | LOOKAHEAD( <IDENTIFIER> <LPAREN> )
-//        <IDENTIFIER> { id = token.image; args = new ArrayList<Node>(); }
-//        args = arguments()
-//        { expr = new FunctionCall(id, args); }
-//        | <IDENTIFIER> { expr = new Expression(token.image); }
-//
-//        | expr = literal()
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse an expression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
-//
-// Parse a literal
-//     literal ::= INT_LITERAL
-//               | STRING_LITERAL
-SLExpressionNode literal(): {SLExpressionNode result = null;}
+
+// Parse an expression
+SLExpressionNode Expression(): {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+}
 {
     try {
-        <INT_LITERAL>
-        { result = factory.createNumericLiteral(token); }
-        | <STRING_LITERAL>
-        { result = factory.createStringLiteral(token, true); }
-    } catch (ParseException e) {
-        System.out.println("Failed to parse literal");
+        result = LogicTerm()
+        (
+            <LOR>   { Token op = token; }
+            right = LogicTerm()
+            { result = factory.createBinary(op, result, right); }
+        )*
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+SLExpressionNode LogicTerm(): {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+}
+{
+    try {
+        result = LogicFactor()
+        (
+            <LAND>   { Token op = token; }
+            right = LogicFactor()
+            { result = factory.createBinary(op, result, right); }
+        )*
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+SLExpressionNode LogicFactor(): {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+}
+{
+    try {
+        result = Arithmetic()
+        [
+            (<LT> | <LE> | <GT> | <GE> | <EQUAL> | <NOT_EQUAL>)  { Token op = token; }
+            right = Arithmetic()
+            { result = factory.createBinary(op, result, right); }
+        ]
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+SLExpressionNode Arithmetic(): {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+}
+{
+    try {
+        result = Term()
+        (
+            (<PLUS> | <MINUS>)   { Token op = token; }
+            right = Term()
+            { result = factory.createBinary(op, result, right); }
+        )*
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+SLExpressionNode Term(): {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+}
+{
+    try {
+        result = Factor()
+        (
+            (<STAR> | <DIV>)   { Token op = token; }
+            right = Factor()
+            { result = factory.createBinary(op, result, right); }
+        )*
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+
+SLExpressionNode Factor(): {
+    SLExpressionNode result = null;
+}
+{
+    try {
+            <IDENTIFIER> { SLExpressionNode assignmentName = factory.createStringLiteral(token, false); }
+            (
+                result = MemberExpression(null, null, assignmentName)
+                | { result = factory.createRead(assignmentName); }
+            )
+        | <STRING_LITERAL> { result = factory.createStringLiteral(token, true); }
+
+        | <NUMERIC_LITERAL> { result = factory.createNumericLiteral(token); }
+
+        | <LPAREN> { int start = token.charPos; }
+          result = Expression() { SLExpressionNode expr = result; }
+          <RPAREN> { int length = (token.charPos + token.val.length()) - start; }
+          { result = factory.createParenExpression(expr, start, length); }
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+    { return result; }
+}
+
+SLExpressionNode MemberExpression(SLExpressionNode r,
+                                    SLExpressionNode assignmentReceiver,
+                                    SLExpressionNode assignmentName): {
+    SLExpressionNode result = null;
+    SLExpressionNode receiver = r;
+    SLExpressionNode nestedAssignmentName = null;
+    List<SLExpressionNode> parameters = null;
+    SLExpressionNode parameter = null;
+}
+{
+    try {
+        (
+            <LPAREN> { parameters = new ArrayList<SLExpressionNode>();
+                        if (receiver == null) {
+                            receiver = factory.createRead(assignmentName);
+                        }
+                     }
+            [
+                parameter = Expression()
+                { parameters.add(parameter); }
+                (
+                    <COMMA>
+                    parameter = Expression()
+                    { parameters.add(parameter); }
+                )*
+            ]
+            <RPAREN> { Token finalToken = token; }
+            { result = factory.createCall(receiver, parameters, finalToken); }
+
+            | <ASSIGN> { SLExpressionNode value = null; }
+              value = Expression() {
+              if (assignmentName == null) {
+                System.out.println("invalid assignment target");
+              } else if (assignmentReceiver == null) {
+                result = factory.createAssignment(assignmentName, value);
+              } else {
+                result = factory.createWriteProperty(assignmentReceiver, assignmentName, value);
+              } }
+
+        | <DOT> { if (receiver == null) {
+                    receiver = factory.createRead(assignmentName);
+                  } }
+          <IDENTIFIER>
+          { nestedAssignmentName = factory.createStringLiteral(token, false);
+            result = factory.createReadProperty(receiver, nestedAssignmentName); }
+
+        | <LBRACK> { if (receiver == null) {
+                        receiver = factory.createRead(assignmentName);
+                     } }
+          assignmentName = Expression()
+          { result = factory.createReadProperty(receiver, nestedAssignmentName); }
+          <RBRACK>
+        )
+        [
+            result = MemberExpression(result, receiver, nestedAssignmentName)
+        ]
+    } catch ( ParseException e ) {
+        System.out.println("Failed to parse an expression");
         e.printStackTrace();
     }
     { return result; }

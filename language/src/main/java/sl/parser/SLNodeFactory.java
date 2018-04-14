@@ -154,7 +154,6 @@ public class SLNodeFactory {
         frameDescriptor = new FrameDescriptor();
         methodNodes = new ArrayList<>();
         startBlock();
-        System.out.println("end startFunction");
     }
 
     public void addFormalParameter(Token nameToken) {

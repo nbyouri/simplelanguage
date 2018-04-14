@@ -25,65 +25,71 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int WHILE = 12;
   /** RegularExpression Id. */
-  int ASSIGN = 13;
+  int DEBUGGER = 13;
   /** RegularExpression Id. */
-  int EQUAL = 14;
+  int BREAK = 14;
   /** RegularExpression Id. */
-  int NOT_EQUAL = 15;
+  int CONTINUE = 15;
   /** RegularExpression Id. */
-  int GT = 16;
+  int ASSIGN = 16;
   /** RegularExpression Id. */
-  int GE = 17;
+  int EQUAL = 17;
   /** RegularExpression Id. */
-  int LT = 18;
+  int NOT_EQUAL = 18;
   /** RegularExpression Id. */
-  int LE = 19;
+  int GT = 19;
   /** RegularExpression Id. */
-  int STAR = 20;
+  int GE = 20;
   /** RegularExpression Id. */
-  int DIV = 21;
+  int LT = 21;
   /** RegularExpression Id. */
-  int PLUS = 22;
+  int LE = 22;
   /** RegularExpression Id. */
-  int MINUS = 23;
+  int STAR = 23;
   /** RegularExpression Id. */
-  int LOR = 24;
+  int DIV = 24;
   /** RegularExpression Id. */
-  int LAND = 25;
+  int PLUS = 25;
   /** RegularExpression Id. */
-  int LPAREN = 26;
+  int MINUS = 26;
   /** RegularExpression Id. */
-  int RPAREN = 27;
+  int LOR = 27;
   /** RegularExpression Id. */
-  int LCURLY = 28;
+  int LAND = 28;
   /** RegularExpression Id. */
-  int RCURLY = 29;
+  int LPAREN = 29;
   /** RegularExpression Id. */
-  int LBRACK = 30;
+  int RPAREN = 30;
   /** RegularExpression Id. */
-  int RBRACK = 31;
+  int LCURLY = 31;
   /** RegularExpression Id. */
-  int SEMI = 32;
+  int RCURLY = 32;
   /** RegularExpression Id. */
-  int COMMA = 33;
+  int LBRACK = 33;
   /** RegularExpression Id. */
-  int DOT = 34;
+  int RBRACK = 34;
   /** RegularExpression Id. */
-  int IDENTIFIER = 35;
+  int SEMI = 35;
   /** RegularExpression Id. */
-  int LETTER = 36;
+  int COMMA = 36;
   /** RegularExpression Id. */
-  int DIGIT = 37;
+  int DOT = 37;
   /** RegularExpression Id. */
-  int NON_ZERO_DIGIT = 38;
+  int IDENTIFIER = 38;
   /** RegularExpression Id. */
-  int INT_LITERAL = 39;
+  int LETTER = 39;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 40;
+  int DIGIT = 40;
   /** RegularExpression Id. */
-  int ESC = 41;
+  int NON_ZERO_DIGIT = 41;
   /** RegularExpression Id. */
-  int ERROR = 42;
+  int NUMERIC_LITERAL = 42;
+  /** RegularExpression Id. */
+  int STRING_LITERAL = 43;
+  /** RegularExpression Id. */
+  int ESC = 44;
+  /** RegularExpression Id. */
+  int ERROR = 45;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -103,6 +109,9 @@ public interface ParserConstants {
     "\"if\"",
     "\"else\"",
     "\"while\"",
+    "\"debugger\"",
+    "\"break\"",
+    "\"continue\"",
     "\"=\"",
     "\"==\"",
     "\"!=\"",
@@ -129,7 +138,7 @@ public interface ParserConstants {
     "<LETTER>",
     "<DIGIT>",
     "<NON_ZERO_DIGIT>",
-    "<INT_LITERAL>",
+    "<NUMERIC_LITERAL>",
     "<STRING_LITERAL>",
     "<ESC>",
     "<ERROR>",

@@ -14,14 +14,14 @@ import sl.nodes.SLStatementNode;
 public class Parser implements ParserConstants {
     SLNodeFactory factory = null;
 
-    public Map<String, SLRootNode> parseURI(Source source) {
-        return parseURI(null, source);
+    public Map<String, SLRootNode> parseUri(Source source) {
+        return parseUri(null, source);
     }
 
-    public Map<String, SLRootNode> parseURI(SLLanguage language, Source source) {
+    public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) {
         this.factory = new SLNodeFactory(language, source);
         try {
-            this.translationUnit();
+            this.Uri();
         } catch (Exception e) {
             System.out.println("Failed to parse file!");
             e.printStackTrace();
@@ -36,7 +36,7 @@ public class Parser implements ParserConstants {
 
 // Parse a compilation unit
 //       translationUnit ::= {function}
-  final public void translationUnit() throws ParseException {
+  final public void Uri() throws ParseException {
     try {
       label_1:
       while (true) {
@@ -48,7 +48,7 @@ public class Parser implements ParserConstants {
           jj_la1[0] = jj_gen;
           break label_1;
         }
-        function();
+        Function();
       }
     } catch (ParseException e) {
         System.out.println("Failed to parse translationUnit");
@@ -56,33 +56,9 @@ public class Parser implements ParserConstants {
     }
   }
 
-//// Parse a qualified identifier.
-////   qualifiedIdentifier ::= IDENTIFIER {DOT IDENTIFIER}
-//Node qualifiedIdentifier(): {
-//    String qualifiedIdentifier = "";
-//}
-//{
-//    try {
-//        <IDENTIFIER>
-//        {
-//            qualifiedIdentifier = token.image;
-//        }
-//        (
-//            <DOT> <IDENTIFIER>
-//            { qualifiedIdentifier += "." + token.image; }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse qualifiedIdentifier");
-//        e.printStackTrace();
-//    }
-//    { return new QualifiedIdentifier(qualifiedIdentifier); }
-//}
-
-
 // Parse a function
 //      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN block
-  final public void function() throws ParseException {
+  final public void Function() throws ParseException {
     try {
       jj_consume_token(FUNCTION);
       jj_consume_token(IDENTIFIER);
@@ -118,13 +94,12 @@ public class Parser implements ParserConstants {
         System.out.println("Failed to parse Function");
         e.printStackTrace();
     }
-      factory.finishFunction(block());
+      factory.finishFunction(Block(false));
   }
 
 // Parse a block
 //      Block ::= LCURLY {blockStatement} RCURLY
-// todo check inloop for break and continue
-  final public SLStatementNode block() throws ParseException {
+  final public SLStatementNode Block(boolean inLoop) throws ParseException {
     SLStatementNode node = null;
     List<SLStatementNode> body = new ArrayList<SLStatementNode>();
     factory.startBlock();
@@ -136,13 +111,22 @@ public class Parser implements ParserConstants {
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case RETURN:
+        case IF:
+        case WHILE:
+        case DEBUGGER:
+        case BREAK:
+        case CONTINUE:
+        case LPAREN:
+        case IDENTIFIER:
+        case NUMERIC_LITERAL:
+        case STRING_LITERAL:
           ;
           break;
         default:
           jj_la1[3] = jj_gen;
           break label_3;
         }
-        node = statement();
+        node = Statement(inLoop);
               body.add(node);
       }
       jj_consume_token(RCURLY);
@@ -156,83 +140,6 @@ public class Parser implements ParserConstants {
   }
 
 //
-//// Parse a  blockStatement
-////      blockStatement ::= variableDeclarator | statement
-//Node blockStatement(): {
-//    Node statement = null;
-//}
-//{
-//    try {
-//        LOOKAHEAD ( <IDENTIFIER> <ASSIGN> )
-//        statement = variableDeclarator()
-//        | statement =  statement()
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse blockStatement");
-//        e.printStackTrace();
-//    }
-//    { return statement; }
-//}
-//
-//// Parse a variableDeclarator
-////      variableDeclarator ::= IDENTIFIER [ASSIGN expression] SEMI
-//Variable variableDeclarator(): {Node expr = null; int line = 0; String name = ""; String value = ""; }
-//{
-//    try {
-//         <IDENTIFIER> { line = token.beginLine; name = token.image; }
-//         [
-//            <ASSIGN> expr = expression() { value = expr.toString(); }
-//         ]
-//         <SEMI>
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse variableDeclarator for variable " + name);
-//        e.printStackTrace();
-//    }
-//    { return new Variable(name, value); }
-//}
-//
-//// Parse arguments.
-////      arguments ::= LPAREN [expression {COMMA expression}] RPAREN
-//ArrayList<Node> arguments(): {
-//    ArrayList<Node> args = new ArrayList<Node>();
-//    Node anExpression = null;
-//}
-//{
-//    try {
-//        <LPAREN>
-//        [
-//            anExpression = expression() { args.add( anExpression ); }
-//            (
-//                <COMMA> anExpression = expression()
-//                { args.add( anExpression ); }
-//            )*
-//        ]
-//        <RPAREN>
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse arguments");
-//        e.printStackTrace();
-//    }
-//    { return args; }
-//}
-//
-//// Parse a parenthesized expression.
-////   parExpression ::= LPAREN expression RPAREN
-//private Node parExpression(): {
-//    Node expr = null;
-//
-//}
-//{
-//    try {
-//        <LPAREN> expr = expression() <RPAREN>
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse parExpression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
 //
 // Parse a statement
 //     statement ::= block
@@ -241,270 +148,83 @@ public class Parser implements ParserConstants {
 //                | RETURN [expression] SEMI
 //                | SEMI
 //                | expression SEMI // TODO validate side effects
-  final public SLStatementNode statement() throws ParseException {
-    SLStatementNode stmt = null;
-    try {
-      jj_consume_token(RETURN);
-                      Token returnToken = token; SLExpressionNode value = null;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case INT_LITERAL:
-      case STRING_LITERAL:
-        value = literal();
-        break;
-      default:
-        jj_la1[4] = jj_gen;
-        ;
-      }
-      jj_consume_token(SEMI);
-          stmt = factory.createReturn(returnToken, value);
-    } catch (ParseException e) {
-        System.out.println("Failed to parse statement");
-        e.printStackTrace();
-    }
-      {if (true) return stmt;}
-    throw new Error("Missing return statement in function");
-  }
-
-//
-//// Parse an expression
-////  expression ::= assignmentExpression
-//Node expression(): {
-//    Node expr = null; String id = null; ArrayList<String> args = null;
-//}
-//{
-//    try {
-//        expr = assignmentExpression()
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse an expression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
-//
-//// Parse an assignment expression.
-////      assignmentExpression ::= conditionalOrExpression  // level 13
-////                               [(ASSIGN) assignmentExpression]
-//Node assignmentExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = conditionalOrExpression()
-//        [
-//            <ASSIGN>
-//            rhs = assignmentExpression()
-//            { lhs = new Variable(lhs.toString(), rhs.toString()); }
-//        ]
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse assignmentExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a conditional-or expression.
-////      conditionalOrExpression ::= conditionalAndExpression // level 11
-////                                  {LOR conditionalAndExpression}
-//Node conditionalOrExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = conditionalAndExpression()
-//        (
-//            <LOR>
-//            rhs = conditionalAndExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LOR]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse conditionalOrExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a conditional-and expression.
-//// conditionalAndExpression ::= inclusiveOrExpression // level 10
-////                              {LAND inclusiveOrExpression}
-//Node conditionalAndExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = equalityExpression()
-//        (
-//            <LAND>
-//            rhs = equalityExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LAND]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse conditionalAndExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//
-//// Parse an equality expression.
-////  equalityExpression ::= relationalExpression  // level 6
-////                          {(EQUAL|NOT_EQUAL) relationalExpression}
-//Node equalityExpression(): {
-//    Node lhs = null, rhs = null;
-//    String op = null;
-//}
-//{
-//    try {
-//        lhs = relationalExpression()
-//        (
-//            <EQUAL>
-//            rhs = relationalExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[EQUAL]); } |
-//            <NOT_EQUAL>
-//            rhs = relationalExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[NOT_EQUAL]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse equalityExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a relational expression.
-////
-////   relationalExpression ::= primary  // level 5
-////                          [ (GT | LT | GE | LE) primary
-//Node relationalExpression(): {
-//    Node lhs = null, rhs = null;
-//    String op = null;
-//}
-//{
-//    try {
-//        lhs = additiveExpression()
-//        [
-//            <GT>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[GT]); } |
-//            <LT>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LT]); } |
-//            <GE>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[GE]); } |
-//            <LE>
-//            rhs = additiveExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[LE]); }
-//        ]
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse relationalExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse an additive expression.
-////      additiveExpression ::= multiplicativeExpression // level 3
-////                          {(PLUS|MINUS) multiplicativeExpression}
-//Node additiveExpression(): {
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = multiplicativeExpression()
-//        (
-//            <PLUS>
-//            rhs = multiplicativeExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[PLUS]); } |
-//            <MINUS>
-//            rhs = multiplicativeExpression()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[MINUS]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse additiveExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//// Parse a multiplicative expression.
-////  multiplicativeExpression ::= unaryExpression  // level 2
-////                              {(STAR|DIV) unaryExpression}
-//Node multiplicativeExpression(): {
-//    int line = 0;
-//    Node lhs = null, rhs = null;
-//}
-//{
-//    try {
-//        lhs = primary()
-//        (
-//            <STAR>
-//            rhs = primary()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[STAR]); } |
-//            <DIV>
-//            rhs = primary()
-//            { lhs = new BinaryExpression(lhs, rhs, tokenImage[DIV]); }
-//        )*
-//    }
-//    catch ( ParseException e ) {
-//        System.out.println("Failed to parse multiplicativeExpression");
-//        e.printStackTrace();
-//    }
-//    { return lhs; }
-//}
-//
-//
-////  Parse an primary
-////  primary ::= parExpression
-////               | IDENTIFIER [arguments]
-////               | IDENTIFIER
-////               | literal
-////               | qualifiedIdentifier // arguments?
-//Node primary(): {
-//    String id = null; ArrayList<Node> args = null;
-//    Node expr = null, node = null;
-//}
-//{
-//    try {
-//        expr = parExpression()
-//
-//        | LOOKAHEAD( <IDENTIFIER> <DOT> )
-//        expr = qualifiedIdentifier()
-//        | LOOKAHEAD( <IDENTIFIER> <LPAREN> )
-//        <IDENTIFIER> { id = token.image; args = new ArrayList<Node>(); }
-//        args = arguments()
-//        { expr = new FunctionCall(id, args); }
-//        | <IDENTIFIER> { expr = new Expression(token.image); }
-//
-//        | expr = literal()
-//    } catch ( ParseException e ) {
-//        System.out.println("Failed to parse an expression");
-//        e.printStackTrace();
-//    }
-//    { return expr; }
-//}
-//
-//
-// Parse a literal
-//     literal ::= INT_LITERAL
-//               | STRING_LITERAL
-  final public SLExpressionNode literal() throws ParseException {
-                             SLExpressionNode result = null;
+  final public SLStatementNode Statement(boolean inLoop) throws ParseException {
+    SLStatementNode result = null;
+    SLExpressionNode expr = null;
+    SLStatementNode body = null;
+    SLStatementNode elsePart = null;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case INT_LITERAL:
-        jj_consume_token(INT_LITERAL);
-          result = factory.createNumericLiteral(token);
+      case WHILE:
+        jj_consume_token(WHILE);
+                  Token whileToken = token;
+        jj_consume_token(LPAREN);
+        expr = Expression();
+        jj_consume_token(RPAREN);
+        body = Block(true);
+          result = factory.createWhile(whileToken, expr, body);
         break;
+      case BREAK:
+        jj_consume_token(BREAK);
+                    if (inLoop) {
+                        result = factory.createBreak(token);
+                    } else {
+                        System.out.println("Break used out of a loop!");
+                    }
+        jj_consume_token(SEMI);
+        break;
+      case CONTINUE:
+        jj_consume_token(CONTINUE);
+                       if (inLoop) {
+                           result = factory.createContinue(token);
+                       } else {
+                           System.out.println("Continue used out of a loop!");
+                       }
+        jj_consume_token(SEMI);
+        break;
+      case IF:
+        jj_consume_token(IF);
+                 Token ifToken = token;
+        jj_consume_token(LPAREN);
+        expr = Expression();
+        jj_consume_token(RPAREN);
+        body = Block(inLoop);
+        if (jj_2_1(2147483647)) {
+          jj_consume_token(ELSE);
+          elsePart = Block(inLoop);
+        } else {
+          ;
+        }
+            result = factory.createIf(ifToken, expr, body, elsePart);
+        break;
+      case RETURN:
+        jj_consume_token(RETURN);
+                     Token returnToken = token;
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LPAREN:
+        case IDENTIFIER:
+        case NUMERIC_LITERAL:
+        case STRING_LITERAL:
+          expr = Expression();
+          break;
+        default:
+          jj_la1[4] = jj_gen;
+          ;
+        }
+            result = factory.createReturn(returnToken, expr);
+        jj_consume_token(SEMI);
+        break;
+      case LPAREN:
+      case IDENTIFIER:
+      case NUMERIC_LITERAL:
       case STRING_LITERAL:
-        jj_consume_token(STRING_LITERAL);
-          result = factory.createStringLiteral(token, true);
+        result = Expression();
+        jj_consume_token(SEMI);
+        break;
+      case DEBUGGER:
+        jj_consume_token(DEBUGGER);
+            result = factory.createDebugger(token);
+        jj_consume_token(SEMI);
         break;
       default:
         jj_la1[5] = jj_gen;
@@ -512,11 +232,361 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse literal");
+        System.out.println("Failed to parse statement");
         e.printStackTrace();
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
+  }
+
+// Parse an expression
+  final public SLExpressionNode Expression() throws ParseException {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+    try {
+      result = LogicTerm();
+      label_4:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LOR:
+          ;
+          break;
+        default:
+          jj_la1[6] = jj_gen;
+          break label_4;
+        }
+        jj_consume_token(LOR);
+                      Token op = token;
+        right = LogicTerm();
+              result = factory.createBinary(op, result, right);
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode LogicTerm() throws ParseException {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+    try {
+      result = LogicFactor();
+      label_5:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LAND:
+          ;
+          break;
+        default:
+          jj_la1[7] = jj_gen;
+          break label_5;
+        }
+        jj_consume_token(LAND);
+                       Token op = token;
+        right = LogicFactor();
+              result = factory.createBinary(op, result, right);
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode LogicFactor() throws ParseException {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+    try {
+      result = Arithmetic();
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case EQUAL:
+      case NOT_EQUAL:
+      case GT:
+      case GE:
+      case LT:
+      case LE:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LT:
+          jj_consume_token(LT);
+          break;
+        case LE:
+          jj_consume_token(LE);
+          break;
+        case GT:
+          jj_consume_token(GT);
+          break;
+        case GE:
+          jj_consume_token(GE);
+          break;
+        case EQUAL:
+          jj_consume_token(EQUAL);
+          break;
+        case NOT_EQUAL:
+          jj_consume_token(NOT_EQUAL);
+          break;
+        default:
+          jj_la1[8] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+                                                                   Token op = token;
+        right = Arithmetic();
+              result = factory.createBinary(op, result, right);
+        break;
+      default:
+        jj_la1[9] = jj_gen;
+        ;
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode Arithmetic() throws ParseException {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+    try {
+      result = Term();
+      label_6:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case PLUS:
+        case MINUS:
+          ;
+          break;
+        default:
+          jj_la1[10] = jj_gen;
+          break label_6;
+        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case PLUS:
+          jj_consume_token(PLUS);
+          break;
+        case MINUS:
+          jj_consume_token(MINUS);
+          break;
+        default:
+          jj_la1[11] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+                                   Token op = token;
+        right = Term();
+              result = factory.createBinary(op, result, right);
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode Term() throws ParseException {
+   SLExpressionNode result = null;
+   SLExpressionNode right = null;
+    try {
+      result = Factor();
+      label_7:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case STAR:
+        case DIV:
+          ;
+          break;
+        default:
+          jj_la1[12] = jj_gen;
+          break label_7;
+        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case STAR:
+          jj_consume_token(STAR);
+          break;
+        case DIV:
+          jj_consume_token(DIV);
+          break;
+        default:
+          jj_la1[13] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+                                 Token op = token;
+        right = Factor();
+              result = factory.createBinary(op, result, right);
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode Factor() throws ParseException {
+    SLExpressionNode result = null;
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case IDENTIFIER:
+        jj_consume_token(IDENTIFIER);
+                           SLExpressionNode assignmentName = factory.createStringLiteral(token, false);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case ASSIGN:
+        case LPAREN:
+        case LBRACK:
+        case DOT:
+          result = MemberExpression(null, null, assignmentName);
+          break;
+        default:
+          jj_la1[14] = jj_gen;
+                    result = factory.createRead(assignmentName);
+        }
+        break;
+      case STRING_LITERAL:
+        jj_consume_token(STRING_LITERAL);
+                             result = factory.createStringLiteral(token, true);
+        break;
+      case NUMERIC_LITERAL:
+        jj_consume_token(NUMERIC_LITERAL);
+                              result = factory.createNumericLiteral(token);
+        break;
+      case LPAREN:
+        jj_consume_token(LPAREN);
+                     int start = token.charPos;
+        result = Expression();
+                                  SLExpressionNode expr = result;
+        jj_consume_token(RPAREN);
+                     int length = (token.charPos + token.val.length()) - start;
+            result = factory.createParenExpression(expr, start, length);
+        break;
+      default:
+        jj_la1[15] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public SLExpressionNode MemberExpression(SLExpressionNode r,
+                                    SLExpressionNode assignmentReceiver,
+                                    SLExpressionNode assignmentName) throws ParseException {
+    SLExpressionNode result = null;
+    SLExpressionNode receiver = r;
+    SLExpressionNode nestedAssignmentName = null;
+    List<SLExpressionNode> parameters = null;
+    SLExpressionNode parameter = null;
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case LPAREN:
+        jj_consume_token(LPAREN);
+                       parameters = new ArrayList<SLExpressionNode>();
+                        if (receiver == null) {
+                            receiver = factory.createRead(assignmentName);
+                        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LPAREN:
+        case IDENTIFIER:
+        case NUMERIC_LITERAL:
+        case STRING_LITERAL:
+          parameter = Expression();
+                  parameters.add(parameter);
+          label_8:
+          while (true) {
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case COMMA:
+              ;
+              break;
+            default:
+              jj_la1[16] = jj_gen;
+              break label_8;
+            }
+            jj_consume_token(COMMA);
+            parameter = Expression();
+                      parameters.add(parameter);
+          }
+          break;
+        default:
+          jj_la1[17] = jj_gen;
+          ;
+        }
+        jj_consume_token(RPAREN);
+                       Token finalToken = token;
+              result = factory.createCall(receiver, parameters, finalToken);
+        break;
+      case ASSIGN:
+        jj_consume_token(ASSIGN);
+                         SLExpressionNode value = null;
+        value = Expression();
+              if (assignmentName == null) {
+                System.out.println("invalid assignment target");
+              } else if (assignmentReceiver == null) {
+                result = factory.createAssignment(assignmentName, value);
+              } else {
+                result = factory.createWriteProperty(assignmentReceiver, assignmentName, value);
+              }
+        break;
+      case DOT:
+        jj_consume_token(DOT);
+                  if (receiver == null) {
+                    receiver = factory.createRead(assignmentName);
+                  }
+        jj_consume_token(IDENTIFIER);
+            nestedAssignmentName = factory.createStringLiteral(token, false);
+            result = factory.createReadProperty(receiver, nestedAssignmentName);
+        break;
+      case LBRACK:
+        jj_consume_token(LBRACK);
+                     if (receiver == null) {
+                        receiver = factory.createRead(assignmentName);
+                     }
+        assignmentName = Expression();
+            result = factory.createReadProperty(receiver, nestedAssignmentName);
+        jj_consume_token(RBRACK);
+        break;
+      default:
+        jj_la1[18] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ASSIGN:
+      case LPAREN:
+      case LBRACK:
+      case DOT:
+        result = MemberExpression(result, receiver, nestedAssignmentName);
+        break;
+      default:
+        jj_la1[19] = jj_gen;
+        ;
+      }
+    } catch (ParseException e) {
+        System.out.println("Failed to parse an expression");
+        e.printStackTrace();
+    }
+      {if (true) return result;}
+    throw new Error("Missing return statement in function");
+  }
+
+  private boolean jj_2_1(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_1(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(0, xla); }
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(ELSE)) return true;
+    return false;
   }
 
   /** Generated Token Manager. */
@@ -527,8 +597,10 @@ public class Parser implements ParserConstants {
   /** Next token. */
   public Token jj_nt;
   private int jj_ntk;
+  private Token jj_scanpos, jj_lastpos;
+  private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[6];
+  final private int[] jj_la1 = new int[20];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -536,11 +608,14 @@ public class Parser implements ParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x100,0x0,0x0,0x200,0x0,0x0,};
+      jj_la1_0 = new int[] {0x100,0x0,0x0,0x2000f600,0x20000000,0x2000f600,0x8000000,0x10000000,0x7e0000,0x7e0000,0x6000000,0x6000000,0x1800000,0x1800000,0x20010000,0x20000000,0x0,0x20000000,0x20010000,0x20010000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x2,0x8,0x0,0x180,0x180,};
+      jj_la1_1 = new int[] {0x0,0x10,0x40,0xc40,0xc40,0xc40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x22,0xc40,0x10,0xc40,0x22,0x22,};
    }
+  final private JJCalls[] jj_2_rtns = new JJCalls[1];
+  private boolean jj_rescan = false;
+  private int jj_gc = 0;
 
   /** Constructor with InputStream. */
   public Parser(java.io.InputStream stream) {
@@ -553,7 +628,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -567,7 +643,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Constructor. */
@@ -577,7 +654,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -587,7 +665,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Constructor with generated Token Manager. */
@@ -596,7 +675,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -605,7 +685,8 @@ public class Parser implements ParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 20; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -615,11 +696,44 @@ public class Parser implements ParserConstants {
     jj_ntk = -1;
     if (token.kind == kind) {
       jj_gen++;
+      if (++jj_gc > 100) {
+        jj_gc = 0;
+        for (int i = 0; i < jj_2_rtns.length; i++) {
+          JJCalls c = jj_2_rtns[i];
+          while (c != null) {
+            if (c.gen < jj_gen) c.first = null;
+            c = c.next;
+          }
+        }
+      }
       return token;
     }
     token = oldToken;
     jj_kind = kind;
     throw generateParseException();
+  }
+
+  static private final class LookaheadSuccess extends java.lang.Error { }
+  final private LookaheadSuccess jj_ls = new LookaheadSuccess();
+  private boolean jj_scan_token(int kind) {
+    if (jj_scanpos == jj_lastpos) {
+      jj_la--;
+      if (jj_scanpos.next == null) {
+        jj_lastpos = jj_scanpos = jj_scanpos.next = token_source.getNextToken();
+      } else {
+        jj_lastpos = jj_scanpos = jj_scanpos.next;
+      }
+    } else {
+      jj_scanpos = jj_scanpos.next;
+    }
+    if (jj_rescan) {
+      int i = 0; Token tok = token;
+      while (tok != null && tok != jj_scanpos) { i++; tok = tok.next; }
+      if (tok != null) jj_add_error_token(kind, i);
+    }
+    if (jj_scanpos.kind != kind) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) throw jj_ls;
+    return false;
   }
 
 
@@ -652,16 +766,43 @@ public class Parser implements ParserConstants {
   private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
   private int[] jj_expentry;
   private int jj_kind = -1;
+  private int[] jj_lasttokens = new int[100];
+  private int jj_endpos;
+
+  private void jj_add_error_token(int kind, int pos) {
+    if (pos >= 100) return;
+    if (pos == jj_endpos + 1) {
+      jj_lasttokens[jj_endpos++] = kind;
+    } else if (jj_endpos != 0) {
+      jj_expentry = new int[jj_endpos];
+      for (int i = 0; i < jj_endpos; i++) {
+        jj_expentry[i] = jj_lasttokens[i];
+      }
+      jj_entries_loop: for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
+        int[] oldentry = (int[])(it.next());
+        if (oldentry.length == jj_expentry.length) {
+          for (int i = 0; i < jj_expentry.length; i++) {
+            if (oldentry[i] != jj_expentry[i]) {
+              continue jj_entries_loop;
+            }
+          }
+          jj_expentries.add(jj_expentry);
+          break jj_entries_loop;
+        }
+      }
+      if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
+    }
+  }
 
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[43];
+    boolean[] la1tokens = new boolean[46];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 20; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -673,13 +814,16 @@ public class Parser implements ParserConstants {
         }
       }
     }
-    for (int i = 0; i < 43; i++) {
+    for (int i = 0; i < 46; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
         jj_expentries.add(jj_expentry);
       }
     }
+    jj_endpos = 0;
+    jj_rescan_token();
+    jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
       exptokseq[i] = jj_expentries.get(i);
@@ -693,6 +837,41 @@ public class Parser implements ParserConstants {
 
   /** Disable tracing. */
   final public void disable_tracing() {
+  }
+
+  private void jj_rescan_token() {
+    jj_rescan = true;
+    for (int i = 0; i < 1; i++) {
+    try {
+      JJCalls p = jj_2_rtns[i];
+      do {
+        if (p.gen > jj_gen) {
+          jj_la = p.arg; jj_lastpos = jj_scanpos = p.first;
+          switch (i) {
+            case 0: jj_3_1(); break;
+          }
+        }
+        p = p.next;
+      } while (p != null);
+      } catch(LookaheadSuccess ls) { }
+    }
+    jj_rescan = false;
+  }
+
+  private void jj_save(int index, int xla) {
+    JJCalls p = jj_2_rtns[index];
+    while (p.gen > jj_gen) {
+      if (p.next == null) { p = p.next = new JJCalls(); break; }
+      p = p.next;
+    }
+    p.gen = jj_gen + xla - jj_la; p.first = token; p.arg = xla;
+  }
+
+  static final class JJCalls {
+    int gen;
+    Token first;
+    int arg;
+    JJCalls next;
   }
 
 }
