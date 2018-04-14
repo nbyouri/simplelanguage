@@ -32,13 +32,97 @@ public class Parser {
         try {
             this.Uri();
         } catch (Exception e) {
-            System.out.println("Failed to parse file!");
-            e.printStackTrace();
         }
+                if (this.errors.size() > 0) {
+                    StringBuilder msg = new StringBuilder("Error(s) parsing script:\n");
+                    for (ErrorDescription error : this.errors) {
+                        msg.append(error.message).append("\n");
+                    }
+                    final ErrorDescription desc = errors.get(0);
+                    throw new SLParseError(
+                            source,
+                            desc.line,
+                            desc.column,
+                            desc.length,
+                            msg.toString());
+                }
         return this.factory.getAllFunctions();
     }
 
+    final class ErrorDescription {
+        final int line;
+        final int column;
+        final int length;
+        final String message;
 
+        ErrorDescription(final int line, final int column, final int length, final String message) {
+            this.line = line;
+            this.column = column;
+            this.length = length;
+            this.message = message;
+        }
+    }
+
+    protected final List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+
+    public String errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
+
+    protected void printMsg(int line, int column, int length, String msg) {
+        StringBuffer b = new StringBuffer(errMsgFormat);
+        int pos = b.indexOf("{0}");
+        if (pos >= 0) {
+            b.delete(pos, pos + 3);
+            b.insert(pos, line);
+        }
+        pos = b.indexOf("{1}");
+        if (pos >= 0) {
+            b.delete(pos, pos + 3);
+            b.insert(pos, column);
+        }
+        pos = b.indexOf("{2}");
+        if (pos >= 0)
+            b.replace(pos, pos + 3, msg);
+        errors.add(new ErrorDescription(line, column, length, b.toString()));
+    }
+
+        private void SynError( ParseException e ) {
+            // Get the possible expected tokens
+            StringBuffer expected = new StringBuffer();
+            for ( int i = 0; i < e.expectedTokenSequences.length; i++ ) {
+                for ( int j = 0; j < e.expectedTokenSequences[ i ].length;
+                    j++ ) {
+                    expected.append( "\n" );
+                    expected.append( "    " );
+                    expected.append( tokenImage[
+                        e.expectedTokenSequences[ i ][ j ] ] );
+                    expected.append( "..." );
+                }
+            }
+
+            // Print error message
+            if ( e.expectedTokenSequences.length == 1 ) {
+                this.SemErr(String.format( "%s found where %s sought",
+                    getToken( 1 ), expected ));
+            }
+            else {
+                this.SemErr(String.format( "%s found where one of %s sought",
+                    getToken( 1 ), expected ));
+            }
+        }
+
+
+
+    public void SemErr(String msg) {
+        this.SemErr(token.beginLine, token.beginColumn, token.val.length(), msg);
+    }
+
+    public void SemErr(int line, int col, int length, String s) {
+        printMsg(line, col, length, s);
+    }
+
+    public void Warning(int line, int col, int length, String s) {
+        printMsg(line, col, length, s);
+    }
 }
 
 PARSER_END(Parser)
@@ -204,8 +288,7 @@ SLStatementNode Block(boolean inLoop): {
         )*
         <RCURLY>
     } catch (ParseException e) {
-        System.out.println("Failed to parse block");
-        e.printStackTrace();
+        SynError(e);
     }
     { int length = (token.charPos + token.val.length()) - start; }
     { return factory.finishBlock(body, start, length); }
@@ -236,7 +319,7 @@ SLStatementNode Statement(boolean inLoop): {
         | <BREAK> { if (inLoop) {
                         result = factory.createBreak(token);
                     } else {
-                        System.out.println("Break used out of a loop!");
+                        SemErr("break used outside of loop");
                     }
                   }
           <SEMI>
@@ -244,7 +327,7 @@ SLStatementNode Statement(boolean inLoop): {
         | <CONTINUE> { if (inLoop) {
                            result = factory.createContinue(token);
                        } else {
-                           System.out.println("Continue used out of a loop!");
+                           SemErr("continue used outside of loop");
                        }
                      }
           <SEMI>
@@ -272,8 +355,7 @@ SLStatementNode Statement(boolean inLoop): {
           { result = factory.createDebugger(token); }
           <SEMI>
     } catch (ParseException e) {
-        System.out.println("Failed to parse statement");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -292,8 +374,7 @@ SLExpressionNode Expression(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -311,8 +392,7 @@ SLExpressionNode LogicTerm(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -330,8 +410,7 @@ SLExpressionNode LogicFactor(): {
             { result = factory.createBinary(op, result, right); }
         ]
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -349,8 +428,7 @@ SLExpressionNode Arithmetic(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -368,8 +446,7 @@ SLExpressionNode Term(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -394,8 +471,7 @@ SLExpressionNode Factor(): {
           <RPAREN> { int length = (token.charPos + token.val.length()) - start; }
           { result = factory.createParenExpression(expr, start, length); }
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }
@@ -432,7 +508,7 @@ SLExpressionNode MemberExpression(SLExpressionNode r,
             | <ASSIGN> { SLExpressionNode value = null; }
               value = Expression() {
               if (assignmentName == null) {
-                System.out.println("invalid assignment target");
+                SemErr("invalid assignment target");
               } else if (assignmentReceiver == null) {
                 result = factory.createAssignment(assignmentName, value);
               } else {
@@ -457,8 +533,7 @@ SLExpressionNode MemberExpression(SLExpressionNode r,
             result = MemberExpression(result, receiver, nestedAssignmentName)
         ]
     } catch ( ParseException e ) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
     { return result; }
 }

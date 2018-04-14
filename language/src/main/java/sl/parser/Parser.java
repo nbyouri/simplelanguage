@@ -23,10 +23,96 @@ public class Parser implements ParserConstants {
         try {
             this.Uri();
         } catch (Exception e) {
-            System.out.println("Failed to parse file!");
-            e.printStackTrace();
         }
+                if (this.errors.size() > 0) {
+                    StringBuilder msg = new StringBuilder("Error(s) parsing script:\u005cn");
+                    for (ErrorDescription error : this.errors) {
+                        msg.append(error.message).append("\u005cn");
+                    }
+                    final ErrorDescription desc = errors.get(0);
+                    throw new SLParseError(
+                            source,
+                            desc.line,
+                            desc.column,
+                            desc.length,
+                            msg.toString());
+                }
         return this.factory.getAllFunctions();
+    }
+
+    final class ErrorDescription {
+        final int line;
+        final int column;
+        final int length;
+        final String message;
+
+        ErrorDescription(final int line, final int column, final int length, final String message) {
+            this.line = line;
+            this.column = column;
+            this.length = length;
+            this.message = message;
+        }
+    }
+
+    protected final List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+
+    public String errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
+
+    protected void printMsg(int line, int column, int length, String msg) {
+        StringBuffer b = new StringBuffer(errMsgFormat);
+        int pos = b.indexOf("{0}");
+        if (pos >= 0) {
+            b.delete(pos, pos + 3);
+            b.insert(pos, line);
+        }
+        pos = b.indexOf("{1}");
+        if (pos >= 0) {
+            b.delete(pos, pos + 3);
+            b.insert(pos, column);
+        }
+        pos = b.indexOf("{2}");
+        if (pos >= 0)
+            b.replace(pos, pos + 3, msg);
+        errors.add(new ErrorDescription(line, column, length, b.toString()));
+    }
+
+        private void SynError( ParseException e ) {
+            // Get the possible expected tokens
+            StringBuffer expected = new StringBuffer();
+            for ( int i = 0; i < e.expectedTokenSequences.length; i++ ) {
+                for ( int j = 0; j < e.expectedTokenSequences[ i ].length;
+                    j++ ) {
+                    expected.append( "\u005cn" );
+                    expected.append( "    " );
+                    expected.append( tokenImage[
+                        e.expectedTokenSequences[ i ][ j ] ] );
+                    expected.append( "..." );
+                }
+            }
+
+            // Print error message
+            if ( e.expectedTokenSequences.length == 1 ) {
+                this.SemErr(String.format( "%s found where %s sought",
+                    getToken( 1 ), expected ));
+            }
+            else {
+                this.SemErr(String.format( "%s found where one of %s sought",
+                    getToken( 1 ), expected ));
+            }
+        }
+
+
+
+    public void SemErr(String msg) {
+        this.SemErr(token.beginLine, token.beginColumn, token.val.length(), msg);
+    }
+
+    public void SemErr(int line, int col, int length, String s) {
+        printMsg(line, col, length, s);
+    }
+
+    public void Warning(int line, int col, int length, String s) {
+        printMsg(line, col, length, s);
     }
 
 /////////////////////////////////////////////////////////
@@ -131,8 +217,7 @@ public class Parser implements ParserConstants {
       }
       jj_consume_token(RCURLY);
     } catch (ParseException e) {
-        System.out.println("Failed to parse block");
-        e.printStackTrace();
+        SynError(e);
     }
       int length = (token.charPos + token.val.length()) - start;
       {if (true) return factory.finishBlock(body, start, length);}
@@ -169,7 +254,7 @@ public class Parser implements ParserConstants {
                     if (inLoop) {
                         result = factory.createBreak(token);
                     } else {
-                        System.out.println("Break used out of a loop!");
+                        SemErr("break used outside of loop");
                     }
         jj_consume_token(SEMI);
         break;
@@ -178,7 +263,7 @@ public class Parser implements ParserConstants {
                        if (inLoop) {
                            result = factory.createContinue(token);
                        } else {
-                           System.out.println("Continue used out of a loop!");
+                           SemErr("continue used outside of loop");
                        }
         jj_consume_token(SEMI);
         break;
@@ -232,8 +317,7 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse statement");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -261,8 +345,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -289,8 +372,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -341,8 +423,7 @@ public class Parser implements ParserConstants {
         ;
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -381,8 +462,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -421,8 +501,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -470,8 +549,7 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -528,7 +606,7 @@ public class Parser implements ParserConstants {
                          SLExpressionNode value = null;
         value = Expression();
               if (assignmentName == null) {
-                System.out.println("invalid assignment target");
+                SemErr("invalid assignment target");
               } else if (assignmentReceiver == null) {
                 result = factory.createAssignment(assignmentName, value);
               } else {
@@ -570,8 +648,7 @@ public class Parser implements ParserConstants {
         ;
       }
     } catch (ParseException e) {
-        System.out.println("Failed to parse an expression");
-        e.printStackTrace();
+        SynError(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
