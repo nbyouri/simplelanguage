@@ -191,7 +191,8 @@ void function(): {}
             <FUNCTION>
             <IDENTIFIER>    { Token identifierToken = token; }
             <LPAREN>        { int bodyStartPos = token.charPos; }
-            [               { factory.startFunction(identifierToken, bodyStartPos); }
+                            { factory.startFunction(identifierToken, bodyStartPos); }
+            [
                 <IDENTIFIER> { factory.addFormalParameter(token); }
                 (
                     <COMMA>

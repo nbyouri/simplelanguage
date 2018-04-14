@@ -89,9 +89,9 @@ public class Parser implements ParserConstants {
                               Token identifierToken = token;
       jj_consume_token(LPAREN);
                               int bodyStartPos = token.charPos;
+                              factory.startFunction(identifierToken, bodyStartPos);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case IDENTIFIER:
-                              factory.startFunction(identifierToken, bodyStartPos);
         jj_consume_token(IDENTIFIER);
                                factory.addFormalParameter(token);
         label_2:

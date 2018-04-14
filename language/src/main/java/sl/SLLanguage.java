@@ -214,6 +214,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
          * the functions with the SLContext happens lazily in SLEvalRootNode.
          */
         if (request.getArgumentNames().isEmpty()) {
+            System.out.println("Going to parse file!");
             Parser p = new Parser(source.getInputStream());
             functions = p.parseURI(this, source);
         } else {
@@ -231,10 +232,11 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
             Source decoratedSource = Source.newBuilder(sb.toString()).mimeType(request.getSource().getMimeType()).name(request.getSource().getName()).build();
             functions = new Parser(source.getInputStream()).parseURI(this, decoratedSource);
         }
-
+        System.out.println(functions);
         SLRootNode main = functions.get("main");
         SLRootNode evalMain;
         if (main != null) {
+            System.out.println("Evaluating main node");
             /*
              * We have a main function, so "evaluating" the parsed source means invoking that main
              * function. However, we need to lazily register functions into the SLContext first, so
@@ -243,6 +245,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
              */
             evalMain = new SLEvalRootNode(this, main.getFrameDescriptor(), main.getBodyNode(), main.getSourceSection(), main.getName(), functions);
         } else {
+            System.out.println("Evaluating without main");
             /*
              * Even without a main function, "evaluating" the parsed source needs to register the
              * functions into the SLContext.
