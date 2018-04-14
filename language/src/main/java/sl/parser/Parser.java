@@ -76,7 +76,8 @@ public class Parser implements ParserConstants {
         errors.add(new ErrorDescription(line, column, length, b.toString()));
     }
 
-        private void SynError( ParseException e ) {
+        private void SynErr( ParseException e ) {
+//            token = getNextToken();
             // Get the possible expected tokens
             StringBuffer expected = new StringBuffer();
             for ( int i = 0; i < e.expectedTokenSequences.length; i++ ) {
@@ -101,7 +102,10 @@ public class Parser implements ParserConstants {
             }
         }
 
-
+    private void SynErr(String msg) {
+//        token = getNextToken();
+        this.SemErr(msg);
+    }
 
     public void SemErr(String msg) {
         this.SemErr(token.beginLine, token.beginColumn, token.val.length(), msg);
@@ -217,7 +221,7 @@ public class Parser implements ParserConstants {
       }
       jj_consume_token(RCURLY);
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       int length = (token.charPos + token.val.length()) - start;
       {if (true) return factory.finishBlock(body, start, length);}
@@ -317,7 +321,7 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr("invalid Statement");
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -345,7 +349,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -372,7 +376,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -423,7 +427,7 @@ public class Parser implements ParserConstants {
         ;
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -462,7 +466,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -501,7 +505,7 @@ public class Parser implements ParserConstants {
               result = factory.createBinary(op, result, right);
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -549,7 +553,7 @@ public class Parser implements ParserConstants {
         throw new ParseException();
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr("invalid Factor");
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -648,7 +652,7 @@ public class Parser implements ParserConstants {
         ;
       }
     } catch (ParseException e) {
-        SynError(e);
+        SynErr("invalid MemberExpression");
     }
       {if (true) return result;}
     throw new Error("Missing return statement in function");

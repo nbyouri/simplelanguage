@@ -85,7 +85,8 @@ public class Parser {
         errors.add(new ErrorDescription(line, column, length, b.toString()));
     }
 
-        private void SynError( ParseException e ) {
+        private void SynErr( ParseException e ) {
+            token = getNextToken();
             // Get the possible expected tokens
             StringBuffer expected = new StringBuffer();
             for ( int i = 0; i < e.expectedTokenSequences.length; i++ ) {
@@ -110,7 +111,10 @@ public class Parser {
             }
         }
 
-
+    private void SynErr(String msg) {
+        token = getNextToken();
+        this.SemErr(msg);
+    }
 
     public void SemErr(String msg) {
         this.SemErr(token.beginLine, token.beginColumn, token.val.length(), msg);
@@ -288,7 +292,7 @@ SLStatementNode Block(boolean inLoop): {
         )*
         <RCURLY>
     } catch (ParseException e) {
-        SynError(e);
+        SynErr(e);
     }
     { int length = (token.charPos + token.val.length()) - start; }
     { return factory.finishBlock(body, start, length); }
@@ -355,7 +359,7 @@ SLStatementNode Statement(boolean inLoop): {
           { result = factory.createDebugger(token); }
           <SEMI>
     } catch (ParseException e) {
-        SynError(e);
+        SynErr("invalid Statement");
     }
     { return result; }
 }
@@ -374,7 +378,7 @@ SLExpressionNode Expression(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr(e);
     }
     { return result; }
 }
@@ -392,7 +396,7 @@ SLExpressionNode LogicTerm(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr(e);
     }
     { return result; }
 }
@@ -410,7 +414,7 @@ SLExpressionNode LogicFactor(): {
             { result = factory.createBinary(op, result, right); }
         ]
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr(e);
     }
     { return result; }
 }
@@ -428,7 +432,7 @@ SLExpressionNode Arithmetic(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr(e);
     }
     { return result; }
 }
@@ -446,7 +450,7 @@ SLExpressionNode Term(): {
             { result = factory.createBinary(op, result, right); }
         )*
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr(e);
     }
     { return result; }
 }
@@ -471,7 +475,7 @@ SLExpressionNode Factor(): {
           <RPAREN> { int length = (token.charPos + token.val.length()) - start; }
           { result = factory.createParenExpression(expr, start, length); }
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr("invalid Factor");
     }
     { return result; }
 }
@@ -533,7 +537,7 @@ SLExpressionNode MemberExpression(SLExpressionNode r,
             result = MemberExpression(result, receiver, nestedAssignmentName)
         ]
     } catch ( ParseException e ) {
-        SynError(e);
+        SynErr("invalid MemberExpression");
     }
     { return result; }
 }

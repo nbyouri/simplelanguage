@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(SLTestRunner.class)
-@SLTestSuite({"tests/error"})
+@SLTestSuite({"tests"})
 public class SLSimpleTestSuite {
 
     public static void main(String[] args) throws Exception {
