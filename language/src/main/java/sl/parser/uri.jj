@@ -23,16 +23,13 @@ import sl.nodes.SLStatementNode;
 public class Parser {
     SLNodeFactory factory = null;
 
-    public Map<String, SLRootNode> parseUri(Source source) {
+    public Map<String, SLRootNode> parseUri(Source source) throws Exception {
         return parseUri(null, source);
     }
 
-    public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) {
+    public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) throws Exception {
         this.factory = new SLNodeFactory(language, source);
-        try {
             this.Uri();
-        } catch (Exception e) {
-        }
                 if (this.errors.size() > 0) {
                     StringBuilder msg = new StringBuilder("Error(s) parsing script:\n");
                     for (ErrorDescription error : this.errors) {
@@ -247,7 +244,7 @@ void Uri(): {}
         Function()
     )+
     |
-    { FatalError("No functions"); }
+    { throw new ParseException("No functions"); }
 
 }
 
