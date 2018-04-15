@@ -529,7 +529,7 @@ SLExpressionNode MemberExpression(SLExpressionNode r,
         | <LBRACK> { if (receiver == null) {
                         receiver = factory.createRead(assignmentName);
                      } }
-          assignmentName = Expression()
+          nestedAssignmentName = Expression()
           { result = factory.createReadProperty(receiver, nestedAssignmentName); }
           <RBRACK>
         )

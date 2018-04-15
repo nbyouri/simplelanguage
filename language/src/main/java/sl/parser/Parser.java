@@ -131,9 +131,6 @@ public class Parser implements ParserConstants {
       label_1:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-//            case IDENTIFIER:
-//                System.out.println("id == " + jj_ntk());
-//                break;
         case FUNCTION:
           ;
           break;
@@ -634,7 +631,7 @@ public class Parser implements ParserConstants {
                      if (receiver == null) {
                         receiver = factory.createRead(assignmentName);
                      }
-        assignmentName = Expression();
+        nestedAssignmentName = Expression();
             result = factory.createReadProperty(receiver, nestedAssignmentName);
         jj_consume_token(RBRACK);
         break;
