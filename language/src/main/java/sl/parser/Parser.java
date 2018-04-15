@@ -77,7 +77,7 @@ public class Parser implements ParserConstants {
     }
 
         private void SynErr( ParseException e ) {
-            token = getNextToken();
+//            token = getNextToken();
             // Get the possible expected tokens
             StringBuffer expected = new StringBuffer();
             for ( int i = 0; i < e.expectedTokenSequences.length; i++ ) {
@@ -103,7 +103,7 @@ public class Parser implements ParserConstants {
         }
 
     private void SynErr(String msg) {
-        token = getNextToken();
+//        token = getNextToken();
         this.SemErr(msg);
     }
 
