@@ -225,11 +225,12 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
                 sb.append(argumentName);
                 sep = ",";
             }
-            sb.append(") { return ");
+            sb.append(")\n{\n return ");
             sb.append(request.getSource().getCharacters());
-            sb.append(";}");
+            sb.append(";\n}\n");
             Source decoratedSource = Source.newBuilder(sb.toString()).mimeType(request.getSource().getMimeType()).name(request.getSource().getName()).build();
-            functions = new Parser(source.getInputStream()).parseUri(this, decoratedSource);
+            Parser p = new Parser(decoratedSource.getInputStream());
+            functions = p.parseUri(this, decoratedSource);
         }
         SLRootNode main = functions.get("main");
         SLRootNode evalMain;
