@@ -40,6 +40,7 @@
  */
 package sl;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,6 +100,7 @@ import sl.nodes.expression.SLSubNode;
 import sl.nodes.local.SLLexicalScope;
 import sl.nodes.local.SLReadLocalVariableNode;
 import sl.nodes.local.SLWriteLocalVariableNode;
+import sl.parser.ParseException;
 import sl.parser.Parser;
 import sl.parser.SLNodeFactory;
 import sl.runtime.SLBigNumber;
@@ -215,7 +217,11 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
          */
         if (request.getArgumentNames().isEmpty()) {
             Parser p = new Parser(source.getInputStream());
-            functions = p.parseUri(this, source);
+            try {
+                functions = p.parseUri(this, source);
+            } catch (ParseException e) {
+                throw new IOException("Failed to parse !" + e.getMessage());
+            }
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("function main(");
@@ -230,7 +236,11 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
             sb.append(";\n}\n");
             Source decoratedSource = Source.newBuilder(sb.toString()).mimeType(request.getSource().getMimeType()).name(request.getSource().getName()).build();
             Parser p = new Parser(decoratedSource.getInputStream());
-            functions = p.parseUri(this, decoratedSource);
+            try {
+                functions = p.parseUri(this, decoratedSource);
+            } catch (ParseException e) {
+                throw new IOException("Failed to parse !" + e.getMessage());
+            }
         }
         SLRootNode main = functions.get("main");
         SLRootNode evalMain;

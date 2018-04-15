@@ -111,20 +111,24 @@ public class Parser {
             }
         }
 
-    private void SynErr(String msg) {
+    void SynErr(String msg) {
 //        token = getNextToken();
         this.SemErr(msg);
     }
 
-    public void SemErr(String msg) {
+    void FatalError(String msg) {
+        errors.add(new ErrorDescription(0, 0, 0, msg));
+    }
+
+    void SemErr(String msg) {
         this.SemErr(token.beginLine, token.beginColumn, token.val.length(), msg);
     }
 
-    public void SemErr(int line, int col, int length, String s) {
+    void SemErr(int line, int col, int length, String s) {
         printMsg(line, col, length, s);
     }
 
-    public void Warning(int line, int col, int length, String s) {
+    void Warning(int line, int col, int length, String s) {
         printMsg(line, col, length, s);
     }
 }
@@ -239,14 +243,12 @@ TOKEN:
 //       translationUnit ::= {function}
 void Uri(): {}
 {
-    try {
-        (
-            Function()
-        )*
-    } catch (ParseException e) {
-        System.out.println("Failed to parse translationUnit");
-        e.printStackTrace();
-    }
+    (
+        Function()
+    )+
+    |
+    { FatalError("No functions"); }
+
 }
 
 
@@ -268,8 +270,7 @@ void Function(): {}
             ]
             <RPAREN>
     } catch (ParseException e) {
-        System.out.println("Failed to parse Function");
-        e.printStackTrace();
+        throw new ParseException("Failed to parse function");
     }
     { factory.finishFunction(Block(false)); }
 }
