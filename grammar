@@ -1,0 +1,50 @@
+/////////////////////////////////////////////////////////
+//         The uri lexical grammar starts here         //
+/////////////////////////////////////////////////////////
+
+
+// Whitespace and comments -- ignored
+" "|"\t"|"\n"|"\r"|"\f"
+
+"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")
+"/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/"
+
+IDENTIFIER ::= ("a"-"z"|"A"-"Z"|"_"|"$") {"a"-"z"|"A"-"Z"|"_"|"0"-"9"|"$"}
+
+NUMERIC_LITERAL ::= "0" | ("1"-"9") {"0"-"9"}
+STRING_LITERAL ::= "\"" (ESC | ~["\"","\\","\n","\r"])* "\"" >
+ESC ::= "\\" ["n","t","b","r","f","\\","'","\""] >
+
+
+/////////////////////////////////////////////////////////
+//       The uri syntactic grammar starts here         //
+/////////////////////////////////////////////////////////
+
+
+Uri ::= {Function}+
+Function ::= "function" IDENTIFIER "(" [IDENTIFIER {"," IDENTIFIER}] ")" Block
+Block ::= "{" {Statement} "}"
+Statement ::= "while" "(" Expression ")" Block
+            | "break" SEMI
+            | "continue" SEMI
+            | "if" "(" Expression ")" Block ["else" Block]
+            | "return" [Expression] ";"
+            | Expression ";"
+            | "debugger" ";"
+Expression ::= LogicTerm {"||" LogicTerm}
+LogicTerm ::= LogicFactor {"&&" LogicFactor}
+LogicFactor ::= Arithmetic [("<"|"<="|">"|">="|"=="|"!=") Arithmetic]
+Arithmetic ::= Term {("+"|"-") Term}
+Term ::= Factor {("*"|"/") Factor}
+Factor ::= IDENTIFIER (MemberExpression)?
+         | STRING_LITERAL
+         | NUMERIC_LITERAL
+         | "(" Expression ")"
+MemberExpression ::= (
+                       "(" [Expression {"," Expression}] ")"
+                     | "=" Expression
+                     | "." IDENTIFIER
+                     | "[" Expression "]"
+                     )
+                     [MemberExpression]
+

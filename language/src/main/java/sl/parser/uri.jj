@@ -29,20 +29,20 @@ public class Parser {
 
     public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) throws Exception {
         this.factory = new SLNodeFactory(language, source);
-            this.Uri();
-                if (this.errors.size() > 0) {
-                    StringBuilder msg = new StringBuilder("Error(s) parsing script:\n");
-                    for (ErrorDescription error : this.errors) {
-                        msg.append(error.message).append("\n");
-                    }
-                    final ErrorDescription desc = errors.get(0);
-                    throw new SLParseError(
-                            source,
-                            desc.line,
-                            desc.column,
-                            desc.length,
-                            msg.toString());
-                }
+        this.Uri();
+        if (this.errors.size() > 0) {
+            StringBuilder msg = new StringBuilder("Error(s) parsing script:\n");
+            for (ErrorDescription error : this.errors) {
+                msg.append(error.message).append("\n");
+            }
+            final ErrorDescription desc = errors.get(0);
+            throw new SLParseError(
+                source,
+                desc.line,
+                desc.column,
+                desc.length,
+                msg.toString());
+        }
         return this.factory.getAllFunctions();
     }
 
@@ -237,7 +237,7 @@ TOKEN:
 
 
 // Parse a compilation unit
-//       translationUnit ::= {function}
+//       Uri ::= {Function}+
 void Uri(): {}
 {
     (
@@ -245,12 +245,11 @@ void Uri(): {}
     )+
     |
     { throw new ParseException("No functions"); }
-
 }
 
 
 // Parse a function
-//      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN block
+//      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN Block
 void Function(): {}
 {
     try {
@@ -274,7 +273,7 @@ void Function(): {}
 
 
 // Parse a block
-//      Block ::= LCURLY {blockStatement} RCURLY
+//      Block ::= LCURLY {Statement} RCURLY
 SLStatementNode Block(boolean inLoop): {
     SLStatementNode node = null;
     List<SLStatementNode> body = new ArrayList<SLStatementNode>();
@@ -296,15 +295,14 @@ SLStatementNode Block(boolean inLoop): {
     { return factory.finishBlock(body, start, length); }
 }
 
-//
-//
 // Parse a statement
-//     statement ::= block
-//                | IF parExpression statement [ELSE statement]
-//                | WHILE parExpression statement
-//                | RETURN [expression] SEMI
-//                | SEMI
-//                | expression SEMI // TODO validate side effects
+//     Statement ::= WHILE LPAREN Expression RPAREN Block
+//                 | BREAK SEMI
+//                 | CONTINUE SEMI
+//                 | IF LPAREN Expression RPAREN Block [ELSE Block]
+//                 | RETURN [Expression] SEMI
+//                 | Expression SEMI
+//                 | DEBUGGER SEMI
 SLStatementNode Statement(boolean inLoop): {
     SLStatementNode result = null;
     SLExpressionNode expr = null;
@@ -363,6 +361,7 @@ SLStatementNode Statement(boolean inLoop): {
 }
 
 // Parse an expression
+//     Expression ::= LogicTerm {LOR LogicTerm}
 SLExpressionNode Expression(): {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -381,6 +380,8 @@ SLExpressionNode Expression(): {
     { return result; }
 }
 
+// Parse a logicTerm
+//     LogicTerm ::= LogicFactor {LAND LogicFactor}
 SLExpressionNode LogicTerm(): {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -399,6 +400,8 @@ SLExpressionNode LogicTerm(): {
     { return result; }
 }
 
+// Parse a logicFactor
+//     LogicFactor ::= Arithmetic [(LT|LE|GT|GE|EQUAL|NOT_EQUAL) Arithmetic]
 SLExpressionNode LogicFactor(): {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -417,6 +420,8 @@ SLExpressionNode LogicFactor(): {
     { return result; }
 }
 
+// Parse an arithmetic
+//     Arithmetic ::= Term {(PLUS|MINUS) Term}
 SLExpressionNode Arithmetic(): {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -435,6 +440,8 @@ SLExpressionNode Arithmetic(): {
     { return result; }
 }
 
+// Parse a term
+//     Term ::= Factor {(STAR|DIV) Factor}
 SLExpressionNode Term(): {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -453,7 +460,11 @@ SLExpressionNode Term(): {
     { return result; }
 }
 
-
+// Parse a factor
+//     Factor ::= IDENTIFIER (MemberExpression)?
+//              | STRING_LITERAL
+//              | NUMERIC_LITERAL
+//              | LPAREN Expression RPAREN
 SLExpressionNode Factor(): {
     SLExpressionNode result = null;
 }
@@ -478,6 +489,14 @@ SLExpressionNode Factor(): {
     { return result; }
 }
 
+// Parse a memberExpression
+//     MemberExpression ::= (
+//                            LPAREN [Expression {COMMA Expression}] RPAREN
+//                          | ASSIGN Expression
+//                          | DOT IDENTIFIER
+//                          | LBRACK Expression RBRACK
+//                          )
+//                          [MemberExpression]
 SLExpressionNode MemberExpression(SLExpressionNode r,
                                     SLExpressionNode assignmentReceiver,
                                     SLExpressionNode assignmentName): {
