@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 VERSION="0.32"
-LANGUAGE_PATH="./language/target/simplelanguage-$VERSION-SNAPSHOT.jar"
+LANGUAGE_PATH="./language/target/uri-$VERSION-SNAPSHOT.jar"
 LAUNCHER_PATH="./launcher/target/launcher-$VERSION-SNAPSHOT.jar"
 MAIN_CLASS="SLMain"
 JAVA_HOME=graalvm/Contents/Home
