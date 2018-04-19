@@ -55,7 +55,7 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotRuntime;
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class SLSharedCodeSeparatedEnvLegacyTest implements Executor {
 

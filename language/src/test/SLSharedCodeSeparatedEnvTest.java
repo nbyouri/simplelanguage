@@ -54,7 +54,7 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.instrumentation.EventBinding;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class SLSharedCodeSeparatedEnvTest {
 

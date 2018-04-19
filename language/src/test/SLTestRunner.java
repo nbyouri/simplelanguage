@@ -78,8 +78,8 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
-import sl.SLLanguage;
-import sl.builtins.SLBuiltinNode;
+import uri.SLLanguage;
+import builtins.SLBuiltinNode;
 
 public class SLTestRunner extends ParentRunner<SLTestRunner.TestCase> {
 

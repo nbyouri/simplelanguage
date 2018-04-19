@@ -60,7 +60,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.oracle.truffle.api.interop.java.JavaInterop;
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class SLJavaInteropExceptionTest {
     public static class Validator {

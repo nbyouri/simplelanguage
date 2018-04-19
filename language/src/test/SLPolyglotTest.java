@@ -46,7 +46,7 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Language;
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class SLPolyglotTest {
     private PolyglotEngine vm;

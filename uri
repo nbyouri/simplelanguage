@@ -4,6 +4,7 @@ VERSION="0.32"
 LANGUAGE_PATH="./language/target/simplelanguage-$VERSION-SNAPSHOT.jar"
 LAUNCHER_PATH="./launcher/target/launcher-$VERSION-SNAPSHOT.jar"
 MAIN_CLASS="SLMain"
+JAVA_HOME=graalvm/Contents/Home
 
 #######################################################################
 #            Check if the language and launcher jars exist            #

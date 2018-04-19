@@ -49,7 +49,7 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class ToStringOfEvalTest {
     PolyglotEngine engine;

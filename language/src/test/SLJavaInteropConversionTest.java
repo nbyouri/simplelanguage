@@ -53,7 +53,7 @@ import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.junit.Test;
 
-import sl.SLLanguage;
+import uri.SLLanguage;
 
 public class SLJavaInteropConversionTest {
     public static class Validator {
