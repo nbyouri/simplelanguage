@@ -21,7 +21,9 @@ ESC ::= "\\" ["n","t","b","r","f","\\","'","\""] >
 /////////////////////////////////////////////////////////
 
 
-Uri ::= {Function}+
+Uri ::= {Function | Class}
+Class ::= "class" IDENTIFIER ["extends" IDENTIFIER] "{" {MemberDecl} {Function} "}"
+MemberDecl ::= IDENTIFIER ["=" Expression] ";"
 Function ::= "def" IDENTIFIER "(" [IDENTIFIER {"," IDENTIFIER}] ")" Block
 Block ::= "{" {Statement} "}"
 Statement ::= "while" "(" Expression ")" Block

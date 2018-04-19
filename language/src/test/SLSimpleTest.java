@@ -58,16 +58,19 @@ public class SLSimpleTest {
         // @formatter:off
         engine.eval(
             Source.newBuilder("\n" +
-                "def obj(n) {\n" +
-                    "o = new();\n" +
-                    "o.x = n;\n" +
-                    "return o.x;\n}\n").
+                "def main() { return 1; }\n" +
+                "class Thing {\n" +
+                    "a = 1;\n" +
+
+                    "def foo(n) { return n; }\n" +
+                    "def bar(n, b) { return n+b; }\n" +
+                "}\n").
             name("obj.sl").
             mimeType("application/x-sl").
             build()
         );
         // @formatter:on
-        obj = engine.findGlobalSymbol("obj");
+        obj = engine.findGlobalSymbol("main");
     }
 
     @After
@@ -77,7 +80,7 @@ public class SLSimpleTest {
 
     @Test
     public void obj() throws Exception {
-        Number ret = obj.execute(5).as(Number.class);
-        assertEquals(5, ret.intValue());
+        Number ret = obj.execute().as(Number.class);
+        assertEquals(1, ret.intValue());
     }
 }

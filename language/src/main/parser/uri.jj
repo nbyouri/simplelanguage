@@ -159,7 +159,9 @@ SKIP: {
 // Reserved words
 TOKEN:
 {
-  < FUNCTION: "def" >
+  < CLASS: "class" >
+| < EXTENDS: "extends" >
+| < FUNCTION: "def" >
 | < RETURN: "return" >
 | < IF: "if" >
 | < ELSE: "else" >
@@ -237,16 +239,60 @@ TOKEN:
 
 
 // Parse a compilation unit
-//       Uri ::= {Function}+
-void Uri(): {}
+//       Uri ::= {Function | Class}
+void Uri(): {
+    boolean onedef = false;
+}
 {
     (
-        Function()
-    )+
+        Function() { onedef = true; }
     |
-    { throw new ParseException("No functions"); }
+        Class()
+    )*
+    { if (!onedef) { throw new ParseException("No functions"); } }
 }
 
+// Parse a class
+//      Class ::= CLASS IDENTIFIER [EXTENDS IDENTIFIER] LCURLY {MemberDecl} {Function} RCURLY
+void Class(): {
+    SLExpressionNode member = null;
+}
+{
+    try {
+        <CLASS>
+        <IDENTIFIER>
+        [
+            <EXTENDS>
+            <IDENTIFIER>
+        ]
+        <LCURLY>
+        (
+                member = MemberDecl()
+        )*
+        (
+            Function()
+        )*
+        <RCURLY>
+    } catch (Exception e) {
+        throw new ParseException("Failed to parse class");
+    }
+//    { factory.finishClass(); }
+}
+
+// Parse a MemberDecl
+//      MemberDecl ::= IDENTIFIER ["=" Expression] ";"
+SLExpressionNode MemberDecl(): {
+    SLExpressionNode expr = null;
+}
+{
+    <IDENTIFIER>
+    [
+        <ASSIGN>
+        expr = Expression()
+    ]
+    <SEMI>
+    { return expr; }
+}
 
 // Parse a function
 //      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN Block
