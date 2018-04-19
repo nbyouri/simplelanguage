@@ -1,16 +1,16 @@
-function add(a, b) {
+def add(a, b) {
   return a + b;
 }
 
-function sub(a, b) {
+def sub(a, b) {
   return a - b;
 }
 
-function foo(f) {
+def foo(f) {
   println(f(40, 2));
 }
 
-function main() {
+def main() {
   foo(add);
   foo(sub);
 }  

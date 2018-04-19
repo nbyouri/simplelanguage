@@ -1,8 +1,8 @@
-function add(a, b) {
+def add(a, b) {
   return a + b;
 }
 
-function loop(n) {
+def loop(n) {
   i = 0;
   while (i < n) {
     i = add(i, 1); 
@@ -10,7 +10,7 @@ function loop(n) {
   return i;
 }
 
-function main() {
+def main() {
   add("a", "b");
 
   i = 0;

@@ -223,7 +223,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
             }
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("function main(");
+            sb.append("def main(");
             String sep = "";
             for (String argumentName : request.getArgumentNames()) {
                 sb.append(sep);

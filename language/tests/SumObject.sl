@@ -1,4 +1,4 @@
-function loop(n) {
+def loop(n) {
   obj = new();
   obj.i = 0;  
   obj.sum = 0;  
@@ -9,7 +9,7 @@ function loop(n) {
   return obj.sum;  
 }  
 
-function main() {
+def main() {
   i = 0;
   while (i < 20) {
     loop(10000);

@@ -52,19 +52,19 @@ import org.junit.Test;
  */
 public class SLDebugALot {
 
-    private final Source slCode = Source.create("sl", "function main() {\n" +
+    private final Source slCode = Source.create("sl", "def main() {\n" +
                     "  n = 2;\n" +
                     "  return types(n);\n" +
                     "}\n" +
-                    "function doNull() {}\n" +
-                    "function compute(n, l) {\n" +
+                    "def doNull() {}\n" +
+                    "def compute(n, l) {\n" +
                     "  z = new();\n" +
                     "  z.a = n + l;\n" +
                     "  z.b = z;\n" +
                     "  z.c = n - l;\n" +
                     "  return z;\n" +
                     "}\n" +
-                    "function types(n) {\n" +
+                    "def types(n) {\n" +
                     "  a = 1;\n" +
                     "  b = n + a;\n" +
                     "  c = \"string\";\n" +

@@ -1,4 +1,4 @@
-function loop(n) {
+def loop(n) {
   i = 0;  
   while (i < n) {  
     i = i + 1;  
@@ -6,7 +6,7 @@ function loop(n) {
   return i;
 }  
 
-function main() {
+def main() {
   i = 0;
   while (i < 20) {
     loop(1000);

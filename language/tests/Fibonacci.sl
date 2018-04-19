@@ -1,4 +1,4 @@
-function fib(num) { 
+def fib(num) { 
   if (num < 1) {return 0;}
   n1 = 0;
   n2 = 1;
@@ -12,7 +12,7 @@ function fib(num) {
   return n2;
 }
 
-function main() {  
+def main() {  
   i = 1;
   while (i <= 10) {
     println(i + ": " + fib(i));

@@ -1,4 +1,4 @@
-function recursion(n) {
+def recursion(n) {
   local = 42;
   
   if (n > 0) {
@@ -10,6 +10,6 @@ function recursion(n) {
   println(local);
 }
 
-function main() {
+def main() {
   recursion(3);
 }  

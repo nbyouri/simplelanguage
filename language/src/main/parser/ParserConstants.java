@@ -104,7 +104,7 @@ public interface ParserConstants {
     "\"\\f\"",
     "<SINGLE_LINE_COMMENT>",
     "<MULTI_LINE_COMMENT>",
-    "\"function\"",
+    "\"def\"",
     "\"return\"",
     "\"if\"",
     "\"else\"",

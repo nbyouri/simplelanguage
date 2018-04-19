@@ -22,7 +22,7 @@ ESC ::= "\\" ["n","t","b","r","f","\\","'","\""] >
 
 
 Uri ::= {Function}+
-Function ::= "function" IDENTIFIER "(" [IDENTIFIER {"," IDENTIFIER}] ")" Block
+Function ::= "def" IDENTIFIER "(" [IDENTIFIER {"," IDENTIFIER}] ")" Block
 Block ::= "{" {Statement} "}"
 Statement ::= "while" "(" Expression ")" Block
             | "break" SEMI

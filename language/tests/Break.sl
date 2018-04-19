@@ -1,4 +1,4 @@
-function main() {  
+def main() {  
   i = 0;  
   while (i < 1000) {
     if (i >= 942) {

@@ -112,11 +112,11 @@ public class SLDebugDirectTest {
     }
 
     private static Source createFactorial() {
-        return Source.newBuilder("sl", "function test() {\n" +
+        return Source.newBuilder("sl", "def test() {\n" +
                         "  res = fac(2);\n" + "  println(res);\n" +
                         "  return res;\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" + "  }\n" +
                         "  nMinusOne = n - 1;\n" +
@@ -126,12 +126,12 @@ public class SLDebugDirectTest {
     }
 
     private static Source createFactorialWithDebugger() {
-        return Source.newBuilder("sl", "function test() {\n" +
+        return Source.newBuilder("sl", "def test() {\n" +
                         "  res = fac(2);\n" +
                         "  println(res);\n" +
                         "  return res;\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" +
                         "  }\n" +
@@ -144,9 +144,9 @@ public class SLDebugDirectTest {
     }
 
     private static Source createInteropComputation() {
-        return Source.newBuilder("sl", "function test() {\n" +
+        return Source.newBuilder("sl", "def test() {\n" +
                         "}\n" +
-                        "function interopFunction(notifyHandler) {\n" +
+                        "def interopFunction(notifyHandler) {\n" +
                         "  executing = true;\n" +
                         "  while (executing == true || executing) {\n" +
                         "    executing = notifyHandler.isExecuting;\n" +
@@ -311,11 +311,11 @@ public class SLDebugDirectTest {
     }
 
     private static Source createNull() {
-        return Source.newBuilder("sl", "function nullTest() {\n" +
+        return Source.newBuilder("sl", "def nullTest() {\n" +
                         "  res = doNull();\n" +
                         "  return res;\n" +
                         "}\n" +
-                        "function doNull() {\n" +
+                        "def doNull() {\n" +
                         "}\n", "nullTest.sl").buildLiteral();
     }
 

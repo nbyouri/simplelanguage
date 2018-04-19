@@ -58,7 +58,7 @@ public class SLSimpleTest {
         // @formatter:off
         engine.eval(
             Source.newBuilder("\n" +
-                "function obj(n) {\n" +
+                "def obj(n) {\n" +
                     "o = new();\n" +
                     "o.x = n;\n" +
                     "return o.x;\n}\n").

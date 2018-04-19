@@ -1,7 +1,7 @@
-function foo() {}
-function bar() {}
+def foo() {}
+def bar() {}
 
-function main() {  
+def main() {  
   foo();
   if (1 < 2) {
     bar();

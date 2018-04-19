@@ -1,16 +1,16 @@
-function retfun(f) {
+def retfun(f) {
     return f;
 }
 
-function add(a, b) {
+def add(a, b) {
     return a + b;
 }
 
-function mul(a, b) {
+def mul(a, b) {
     return a * b;
 }
 
-function main() {
+def main() {
     fun = retfun(mul);
     println(fun(3, 4));
 }

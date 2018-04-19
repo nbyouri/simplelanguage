@@ -65,33 +65,33 @@ public class SLTckTest extends TruffleTCK {
     protected PolyglotEngine prepareVM(PolyglotEngine.Builder builder) throws Exception {
         PolyglotEngine vm = builder.build();
         // @formatter:off
-        vm.eval(Source.newBuilder("function fourtyTwo() {\n" +
+        vm.eval(Source.newBuilder("def fourtyTwo() {\n" +
                     "  return 42;\n" + //
                     "}\n" +
-                    "function plus(a, b) {\n" +
+                    "def plus(a, b) {\n" +
                     "  return a + b;\n" +
                     "}\n" +
-                    "function identity(x) {\n" +
+                    "def identity(x) {\n" +
                     "  return x;\n" +
                     "}\n" +
-                    "function apply(f) {\n" +
+                    "def apply(f) {\n" +
                     "  return f(18, 32) + 10;\n" +
                     "}\n" +
-                    "function cnt() {\n" +
+                    "def cnt() {\n" +
                     "  return 0;\n" +
                     "}\n" +
-                    "function count() {\n" +
+                    "def count() {\n" +
                     "  n = cnt() + 1;\n" +
-                    "  defineFunction(\"function cnt() { return \" + n + \"; }\");\n" +
+                    "  defineFunction(\"def cnt() { return \" + n + \"; }\");\n" +
                     "  return n;\n" +
                     "}\n" +
-                    "function returnsNull() {\n" +
+                    "def returnsNull() {\n" +
                     "}\n" +
-                    "function complexAdd(a, b) {\n" +
+                    "def complexAdd(a, b) {\n" +
                     "  a.real = a.real + b.real;\n" +
                     "  a.imaginary = a.imaginary + b.imaginary;\n" +
                     "}\n" +
-                    "function compoundObject() {\n" +
+                    "def compoundObject() {\n" +
                     "  obj = new();\n" +
                     "  obj.fourtyTwo = fourtyTwo;\n" +
                     "  obj.plus = plus;\n" +
@@ -99,13 +99,13 @@ public class SLTckTest extends TruffleTCK {
                     "  obj.returnsThis = obj;\n" +
                     "  return obj;\n" +
                     "}\n" +
-                    "function whileLoop(fn) {\n" +
+                    "def whileLoop(fn) {\n" +
                     "  cnt = 0;\n" +
                     "  while (fn(cnt)) {\n" +
                     "    cnt = cnt + 1;\n" +
                     "  }\n" +
                     "}\n" +
-                    "function valuesObject() {\n" +
+                    "def valuesObject() {\n" +
                     "  obj = new();\n" +
                     "  obj.byteValue = 0;\n" +
                     "  obj.shortValue = 0;\n" +
@@ -117,65 +117,65 @@ public class SLTckTest extends TruffleTCK {
                     "  obj.booleanValue = (1 == 0);\n" +
                     "  return obj;\n" +
                     "}\n" +
-                    "function add(a, b) { return a + b; }\n" +
-                    "function addNumbersFunction() {\n" +
+                    "def add(a, b) { return a + b; }\n" +
+                    "def addNumbersFunction() {\n" +
                     "  return add;\n" +
                     "}\n" +
-                    "function objectWithValueProperty() {\n" +
+                    "def objectWithValueProperty() {\n" +
                     "  obj = new();\n" +
                     "  obj.value = 42;\n" +
                     "  return obj;\n" +
                     "}\n" +
-                    "function anInvocable() {\n" +
+                    "def anInvocable() {\n" +
                     "  return \"invocable\";\n" +
                     "}\n" +
-                    "function objectWithKeyInfoAttributes() {\n" +
+                    "def objectWithKeyInfoAttributes() {\n" +
                     "  obj = new();\n" +
                     "  obj.rw = \"rw\";\n" +
                     "  obj.invocable = anInvocable;\n" +
                     "  obj.rm = \"rm\";\n" +
                     "  return obj;\n" +
                     "}\n" +
-                    "function callFunction(f) {\n" +
+                    "def callFunction(f) {\n" +
                     "  return f(41, 42);\n" +
                     "}\n" +
-                    "function readValueFromForeign(o) {\n" +
+                    "def readValueFromForeign(o) {\n" +
                     "  return o.value;\n" +
                     "}\n" +
-                    "function writeValueToForeign(o) {\n" +
+                    "def writeValueToForeign(o) {\n" +
                     "  o.value = 42;\n" +
                     "}\n" +
-                    "function getSizeOfForeign(o) {\n" +
+                    "def getSizeOfForeign(o) {\n" +
                     "  return getSize(o);\n" +
                     "}\n" +
-                    "function isNullOfForeign(o) {\n" +
+                    "def isNullOfForeign(o) {\n" +
                     "  return isNull(o);\n" +
                     "}\n" +
-                    "function hasSizeOfForeign(o) {\n" +
+                    "def hasSizeOfForeign(o) {\n" +
                     "  return hasSize(o);\n" +
                     "}\n" +
-                    "function isExecutableOfForeign(o) {\n" +
+                    "def isExecutableOfForeign(o) {\n" +
                     "  return isExecutable(o);\n" +
                     "}\n" +
-                    "function numberValue() {\n" +
+                    "def numberValue() {\n" +
                     "  return 42;\n" +
                     "}\n" +
-                    "function numberType() {\n" +
+                    "def numberType() {\n" +
                     "  return \"Number\";\n" +
                     "}\n" +
-                    "function stringValue() {\n" +
+                    "def stringValue() {\n" +
                     "  return \"42\";\n" +
                     "}\n" +
-                    "function stringType() {\n" +
+                    "def stringType() {\n" +
                     "  return \"String\";\n" +
                     "}\n" +
-                    "function functionValue() {\n" +
-                    "  return functionValue;\n" +
+                    "def defValue() {\n" +
+                    "  return defValue;\n" +
                     "}\n" +
-                    "function functionType() {\n" +
+                    "def defType() {\n" +
                     "  return \"Function\";\n" +
                     "}\n" +
-                    "function valueWithSource() {\n" +
+                    "def valueWithSource() {\n" +
                     "  return numberValue;\n" +
                     "}\n"
                         ).name("SL TCK").mimeType(SLLanguage.MIME_TYPE
@@ -377,7 +377,7 @@ public class SLTckTest extends TruffleTCK {
     @Override
     protected String[] metaObjects() {
         return new String[]{"numberValue", "numberType", "stringValue", "stringType",
-                        "functionValue", "functionType"};
+                        "defValue", "defType"};
     }
 
     @Override

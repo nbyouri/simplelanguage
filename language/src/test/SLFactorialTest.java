@@ -59,7 +59,7 @@ public class SLFactorialTest {
         // @formatter:off
         engine.eval(
             Source.newBuilder("\n" +
-                "function fac(n) {\n" +
+                "def fac(n) {\n" +
                 "  if (n <= 1) {\n" +
                 "    return 1;\n" +
                 "  }\n" +

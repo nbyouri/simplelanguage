@@ -8,17 +8,17 @@ options {
 
 PARSER_BEGIN(Parser)
 
-package sl.parser;
+package parser;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
-import sl.SLLanguage;
-import sl.nodes.SLExpressionNode;
-import sl.nodes.SLRootNode;
-import sl.nodes.SLStatementNode;
+import uri.SLLanguage;
+import nodes.SLExpressionNode;
+import nodes.SLRootNode;
+import nodes.SLStatementNode;
 
 public class Parser {
     SLNodeFactory factory = null;
@@ -159,7 +159,7 @@ SKIP: {
 // Reserved words
 TOKEN:
 {
-  < FUNCTION: "function" >
+  < FUNCTION: "def" >
 | < RETURN: "return" >
 | < IF: "if" >
 | < ELSE: "else" >

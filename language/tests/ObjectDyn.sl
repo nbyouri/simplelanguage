@@ -1,4 +1,4 @@
-function main() {  
+def main() {  
   obj1 = new();
   obj1["x"] = 42;
   println(obj1["x"]);
@@ -37,16 +37,16 @@ function main() {
   println(obj6["x"]);
 }
 
-function mkobj() {
+def mkobj() {
   newobj = new();
   newobj["z"] = "zzz";
   return newobj;
 }
 
-function read(obj, name) {
+def read(obj, name) {
   return obj[name];
 }
 
-function write(obj, name, value) {
+def write(obj, name, value) {
   return obj[name] = value;
 }

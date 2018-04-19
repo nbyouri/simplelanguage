@@ -54,12 +54,12 @@ public class SLReadPropertyTest {
     @Before
     public void setUp() {
         this.ctx = Context.create("sl");
-        this.slObject = ctx.eval("sl", "function createObject() {\n" +
+        this.slObject = ctx.eval("sl", "def createObject() {\n" +
                         "obj1 = new();\n" +
                         "obj1.number = 42;\n" +
                         "return obj1;\n" +
                         "}\n" +
-                        "function main() {\n" +
+                        "def main() {\n" +
                         "return createObject;\n" +
                         "}").execute();
     }

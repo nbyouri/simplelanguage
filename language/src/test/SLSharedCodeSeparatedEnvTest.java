@@ -93,7 +93,7 @@ public class SLSharedCodeSeparatedEnvTest {
     public void shareCodeUseDifferentOutputStreams() throws Exception {
 
         String sayHello =
-            "function main() {\n" +
+            "def main() {\n" +
             "  println(\"Ahoj\" + import(\"extra\"));" +
             "}";
         // @formatter:on
@@ -113,7 +113,7 @@ public class SLSharedCodeSeparatedEnvTest {
         ByteArrayOutputStream outConsumer = outInstr.lookup(ByteArrayOutputStream.class);
         assertNotNull("Stream capturing is ready", outConsumer);
 
-        String sayHello = "function main() {\n" +
+        String sayHello = "def main() {\n" +
                         "  println(\"Ahoj\" + import(\"extra\"));" +
                         "}";
         // @formatter:on

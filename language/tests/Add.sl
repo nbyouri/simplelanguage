@@ -1,4 +1,4 @@
-function main() {  
+def main() {  
   println(3 + 4);  
   println(3 + "4");  
   println("3" + 4);  

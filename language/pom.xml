@@ -85,12 +85,11 @@
             </execution>
           </executions>
           <configuration>
-            <sourceDirectory>src/main/java/sl/parser</sourceDirectory>
+            <sourceDirectory>src/main/parser</sourceDirectory>
             <includes>
               <include>**/uri.jj</include>
             </includes>
-                <outputDirectory>src/main/java</outputDirectory>
-              <!--<isStatic>false</isStatic>-->
+                <outputDirectory>src/main</outputDirectory>
           </configuration>
         </plugin>
       </plugins>

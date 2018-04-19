@@ -93,7 +93,7 @@ public class SLSharedCodeSeparatedEnvLegacyTest implements Executor {
     public void shareCodeUseDifferentOutputStreams() throws Exception {
         int instances = SLLanguage.counter;
         Source sayHello = Source.newBuilder(
-            "function main() {\n" +
+            "def main() {\n" +
             "  println(\"Ahoj\" + import(\"extra\"));" +
             "}"
         ).mimeType("application/x-sl").name("sayHello.sl").build();
@@ -120,7 +120,7 @@ public class SLSharedCodeSeparatedEnvLegacyTest implements Executor {
         assertNotNull("Stream capturing is ready", outConsumer);
 
         Source sayHello = Source.newBuilder(
-                        "function main() {\n" +
+                        "def main() {\n" +
                                         "  println(\"Ahoj\" + import(\"extra\"));" +
                                         "}").mimeType("application/x-sl").name("sayHello.sl").build();
         // @formatter:on

@@ -1,4 +1,4 @@
-function main() {  
-  eval("application/x-sl", "function foo() { return 14 + 2; }");
+def main() {  
+  eval("application/x-sl", "def foo() { return 14 + 2; }");
   println(foo());
 }

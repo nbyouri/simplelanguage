@@ -1,3 +1,3 @@
-function main() {  
+def main() {  
   if ("4") { }  
 }  

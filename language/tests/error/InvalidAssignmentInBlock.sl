@@ -1,7 +1,7 @@
-function double(x) {
+def double(x) {
   return 2 * x;
 }
 
-function main() {
+def main() {
   double(2) = 4;
 }

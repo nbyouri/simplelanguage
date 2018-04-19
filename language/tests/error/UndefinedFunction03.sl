@@ -1,28 +1,28 @@
-function invoke(f) {
+def invoke(f) {
   f("hello");
 }
 
-function f1() {
+def f1() {
   println("f1");
 }
 
-function f2() {
+def f2() {
   println("f2");
 }
 
-function f3() {
+def f3() {
   println("f3");
 }
 
-function f4() {
+def f4() {
   println("f4");
 }
 
-function f5() {
+def f5() {
   println("f5");
 }
 
-function main() {
+def main() {
   invoke(f1);
   invoke(f2);
   invoke(f3);

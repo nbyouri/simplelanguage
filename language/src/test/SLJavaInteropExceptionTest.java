@@ -69,7 +69,7 @@ public class SLJavaInteropExceptionTest {
         }
 
         public void validateNested() throws Exception {
-            String sourceText = "function test(validator) {\n" +
+            String sourceText = "def test(validator) {\n" +
                             "  return validator.validateException();\n" +
                             "}";
             try (Context context = Context.newBuilder(SLLanguage.ID).build()) {
@@ -79,8 +79,8 @@ public class SLJavaInteropExceptionTest {
             }
         }
 
-        public long validateFunction(Supplier<Long> function) {
-            return function.get();
+        public long validateFunction(Supplier<Long> def) {
+            return def.get();
         }
 
         public void validateMap(Map<String, Object> map) {
@@ -90,7 +90,7 @@ public class SLJavaInteropExceptionTest {
 
     @Test
     public void testGR7284() throws Exception {
-        String sourceText = "function test(validator) {\n" +
+        String sourceText = "def test(validator) {\n" +
                         "  return validator.validateException();\n" +
                         "}";
         try (Context context = Context.newBuilder(SLLanguage.ID).build()) {
@@ -109,7 +109,7 @@ public class SLJavaInteropExceptionTest {
 
     @Test
     public void testGR7284GuestHostGuestHost() throws Exception {
-        String sourceText = "function test(validator) {\n" +
+        String sourceText = "def test(validator) {\n" +
                         "  return validator.validateNested();\n" +
                         "}";
         try (Context context = Context.newBuilder(SLLanguage.ID).build()) {
@@ -135,10 +135,10 @@ public class SLJavaInteropExceptionTest {
     public void testFunctionProxy() throws Exception {
         String javaMethod = "validateFunction";
         String sourceText = "" +
-                        "function supplier() {\n" +
+                        "def supplier() {\n" +
                         "  return error();\n" +
                         "}\n" +
-                        "function test(validator) {\n" +
+                        "def test(validator) {\n" +
                         "  return validator." + javaMethod + "(supplier);\n" +
                         "}";
         try (Context context = Context.newBuilder(SLLanguage.ID).build()) {
@@ -168,7 +168,7 @@ public class SLJavaInteropExceptionTest {
     public void testTruffleMap() throws Exception {
         String javaMethod = "validateMap";
         String sourceText = "" +
-                        "function test(validator) {\n" +
+                        "def test(validator) {\n" +
                         "  return validator." + javaMethod + "(new());\n" +
                         "}";
         try (Context context = Context.newBuilder(SLLanguage.ID).build()) {

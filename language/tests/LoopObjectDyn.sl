@@ -1,4 +1,4 @@
-function loop(n, obj, name) {
+def loop(n, obj, name) {
   obj[name] = 0;  
   while (obj[name] < n) {  
     obj[name] = obj[name] + 1;  
@@ -6,7 +6,7 @@ function loop(n, obj, name) {
   return obj[name];
 }  
 
-function main() {
+def main() {
   i = 0;
   while (i < 20) {
     loop(1000, new(), "prop");

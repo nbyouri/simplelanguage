@@ -1,3 +1,3 @@
-function main() {
+def main() {
   return -1;
 }

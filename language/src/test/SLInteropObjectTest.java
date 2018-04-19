@@ -66,7 +66,7 @@ public class SLInteropObjectTest {
 
     @Test
     public void testObject() throws IOException {
-        final Source src = Source.newBuilder("sl", "function main() {o = new(); o.a = 10; o.b = \"B\"; return o;}", "testObject.sl").build();
+        final Source src = Source.newBuilder("sl", "def main() {o = new(); o.a = 10; o.b = \"B\"; return o;}", "testObject.sl").build();
         final Value obj = context.eval(src);
         Assert.assertTrue(obj.hasMembers());
 

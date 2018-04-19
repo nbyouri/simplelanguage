@@ -1,15 +1,15 @@
-function null() {
+def null() {
 }
 
-function foo() {
+def foo() {
   return "bar";
 }
 
-function f(a, b) {
+def f(a, b) {
   return a + " < " + b + ": " + (a < b);
 }
 
-function main() {  
+def main() {  
   println("s" + null());  
   println("s" + null);  
   println("s" + foo());  

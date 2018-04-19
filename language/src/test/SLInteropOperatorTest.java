@@ -65,7 +65,7 @@ public class SLInteropOperatorTest {
 
     @Test
     public void testAdd() throws IOException {
-        final Source src = Source.newBuilder("sl", "function testAdd(a,b) {return a + b;} function main() {return testAdd;}", "testAdd.sl").build();
+        final Source src = Source.newBuilder("sl", "def testAdd(a,b) {return a + b;} def main() {return testAdd;}", "testAdd.sl").build();
         final Value fnc = context.eval(src);
         Assert.assertTrue(fnc.canExecute());
         final ProxyPrimitive left = () -> 1;
@@ -77,7 +77,7 @@ public class SLInteropOperatorTest {
 
     @Test
     public void testSub() throws IOException {
-        final Source src = Source.newBuilder("sl", "function testSub(a,b) {return a - b;} function main() {return testSub;}", "testSub.sl").build();
+        final Source src = Source.newBuilder("sl", "def testSub(a,b) {return a - b;} def main() {return testSub;}", "testSub.sl").build();
         final Value fnc = context.eval(src);
         final ProxyPrimitive left = () -> 1;
         final ProxyPrimitive right = () -> 2;

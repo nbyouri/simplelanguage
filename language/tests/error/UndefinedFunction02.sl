@@ -1,12 +1,12 @@
-function invoke(f) {
+def invoke(f) {
   f("hello");
 }
 
-function f1() {
+def f1() {
   println("f1");
 }
 
-function main() {
+def main() {
   invoke(f1);
   invoke(foo);  
 }  

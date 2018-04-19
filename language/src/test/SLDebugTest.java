@@ -160,13 +160,13 @@ public class SLDebugTest {
     @Test
     public void testBreakpoint() throws Throwable {
         /*
-         * Wrappers need to remain inserted for recursive functions to work for debugging. Like in
+         * Wrappers need to remain inserted for recursive defs to work for debugging. Like in
          * this test case when the breakpoint is in the exit condition and we want to step out.
          */
-        final Source factorial = slCode("function main() {\n" +
+        final Source factorial = slCode("def main() {\n" +
                         "  return fac(5);\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" + // break
                         "  }\n" +
@@ -234,12 +234,12 @@ public class SLDebugTest {
     @Test
     public void testStepInOver() throws Throwable {
         /*
-         * For recursive function we want to ensure that we don't step when we step over a function.
+         * For recursive def we want to ensure that we don't step when we step over a def.
          */
-        final Source factorial = slCode("function main() {\n" +
+        final Source factorial = slCode("def main() {\n" +
                         "  return fac(5);\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" + // break
                         "  }\n" +
@@ -272,10 +272,10 @@ public class SLDebugTest {
         /*
          * Test AlwaysHalt is working.
          */
-        final Source factorial = slCode("function main() {\n" +
+        final Source factorial = slCode("def main() {\n" +
                         "  return fac(5);\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    debugger; return 1;\n" + // // break
                         "  }\n" +
@@ -298,7 +298,7 @@ public class SLDebugTest {
 
     @Test(expected = PolyglotException.class)
     public void testTimeboxing() throws Throwable {
-        final Source endlessLoop = slCode("function main() {\n" +
+        final Source endlessLoop = slCode("def main() {\n" +
                         "  i = 1; \n" +
                         "  while(i > 0) {\n" +
                         "    i = i + 1;\n" +
@@ -325,11 +325,11 @@ public class SLDebugTest {
 
     @Test
     public void testNull() throws Throwable {
-        final Source factorial = slCode("function main() {\n" +
+        final Source factorial = slCode("def main() {\n" +
                         "  res = doNull();\n" +
                         "  return res;\n" +
                         "}\n" +
-                        "function doNull() {}\n");
+                        "def doNull() {}\n");
 
         try (DebuggerSession session = startSession()) {
             session.suspendNextExecution();
@@ -349,7 +349,7 @@ public class SLDebugTest {
 
     @Test
     public void testDebugValue() throws Throwable {
-        final Source varsSource = slCode("function main() {\n" +
+        final Source varsSource = slCode("def main() {\n" +
                         "  a = doNull();\n" +
                         "  b = 10 == 10;\n" +
                         "  c = 10;\n" +
@@ -360,7 +360,7 @@ public class SLDebugTest {
                         "  e.p2.p21 = 21;\n" +
                         "  return;\n" +
                         "}\n" +
-                        "function doNull() {}\n");
+                        "def doNull() {}\n");
 
         try (DebuggerSession session = startSession()) {
             session.install(Breakpoint.newBuilder(getSourceImpl(varsSource)).lineIs(10).build());
@@ -427,7 +427,7 @@ public class SLDebugTest {
 
     @Test
     public void testValuesScope() throws Throwable {
-        final Source varsSource = slCode("function main() {\n" +
+        final Source varsSource = slCode("def main() {\n" +
                         "  a = 1;\n" +
                         "  if (a > 0) {\n" +
                         "    b = 10;\n" +
@@ -510,7 +510,7 @@ public class SLDebugTest {
 
     @Test
     public void testMetaObjects() {
-        final Source varsSource = slCode("function main() {\n" +
+        final Source varsSource = slCode("def main() {\n" +
                         "  a = doNull();\n" +
                         "  b = 10 == 10;\n" +
                         "  c = 10;\n" +
@@ -520,7 +520,7 @@ public class SLDebugTest {
                         "  f = doNull;\n" +
                         "  return;\n" +
                         "}\n" +
-                        "function doNull() {}\n");
+                        "def doNull() {}\n");
 
         try (DebuggerSession session = startSession()) {
             session.install(Breakpoint.newBuilder(getSourceImpl(varsSource)).lineIs(9).build());
@@ -552,7 +552,7 @@ public class SLDebugTest {
 
     @Test
     public void testSourceLocation() {
-        final Source varsSource = slCode("function main() {\n" +
+        final Source varsSource = slCode("def main() {\n" +
                         "  a = doNull();\n" +
                         "  c = 10;\n" +
                         "  d = \"str\";\n" +
@@ -560,7 +560,7 @@ public class SLDebugTest {
                         "  f = doNull;\n" +
                         "  return;\n" +
                         "}\n" +
-                        "function doNull() {}\n");
+                        "def doNull() {}\n");
 
         try (DebuggerSession session = startSession()) {
             session.install(Breakpoint.newBuilder(getSourceImpl(varsSource)).lineIs(7).build());
@@ -592,10 +592,10 @@ public class SLDebugTest {
 
     @Test
     public void testStack() {
-        final Source stackSource = slCode("function main() {\n" +
+        final Source stackSource = slCode("def main() {\n" +
                         "  return fac(10);\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" + // break
                         "  }\n" +
@@ -634,7 +634,7 @@ public class SLDebugTest {
 
     @Test
     public void testStackInterop() {
-        final Source stackSource = slCode("function fac(n, multiply) {\n" +
+        final Source stackSource = slCode("def fac(n, multiply) {\n" +
                         "  if (n <= 1) {\n" +
                         "    debugger;\n" +
                         "    return 1;\n" +
@@ -662,7 +662,7 @@ public class SLDebugTest {
                 dsf = sfIt.next();
                 boolean inFac = dsf.getName() != null && !dsf.isInternal();
                 if (inFac) {
-                    // Frame in fac function
+                    // Frame in fac def
                     assertEquals("fac", dsf.getName());
                     assertEquals(6, dsf.getSourceSection().getStartLine());
                     assertFalse(dsf.isInternal());
@@ -674,7 +674,7 @@ public class SLDebugTest {
                     numInteropStacks++;
                 }
             }
-            // There were at least as many interop internal frames as frames in fac function:
+            // There were at least as many interop internal frames as frames in fac def:
             assertTrue("numInteropStacks = " + numInteropStacks, numInteropStacks >= numStacksAt6);
             // Some more internal frames remain
             while (sfIt.hasNext()) {
@@ -694,10 +694,10 @@ public class SLDebugTest {
 
     @Test
     public void testUnwindAndReenter() {
-        final Source source = slCode("function main() {\n" +
+        final Source source = slCode("def main() {\n" +
                         "  return fac(10);\n" +
                         "}\n" +
-                        "function fac(n) {\n" +
+                        "def fac(n) {\n" +
                         "  if (n <= 1) {\n" +
                         "    return 1;\n" + // break
                         "  }\n" +
@@ -737,11 +737,11 @@ public class SLDebugTest {
     @Test
     public void testArgumentsAndValues() throws Throwable {
         // Test that after a re-enter, arguments are kept and variables are cleared.
-        final Source source = slCode("function main() {\n" +
+        final Source source = slCode("def main() {\n" +
                         "  i = 10;\n" +
                         "  return fnc(i = i + 1, 20);\n" +
                         "}\n" +
-                        "function fnc(n, m) {\n" +
+                        "def fnc(n, m) {\n" +
                         "  x = n + m;\n" +
                         "  n = m - n;\n" +
                         "  m = m / 2;\n" +

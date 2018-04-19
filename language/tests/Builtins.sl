@@ -1,4 +1,4 @@
-function main() {  
+def main() {  
   println("Hello World!");  
   nanoTime();  
 }  

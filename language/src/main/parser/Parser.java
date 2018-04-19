@@ -20,20 +20,20 @@ public class Parser implements ParserConstants {
 
     public Map<String, SLRootNode> parseUri(SLLanguage language, Source source) throws Exception {
         this.factory = new SLNodeFactory(language, source);
-            this.Uri();
-                if (this.errors.size() > 0) {
-                    StringBuilder msg = new StringBuilder("Error(s) parsing script:\u005cn");
-                    for (ErrorDescription error : this.errors) {
-                        msg.append(error.message).append("\u005cn");
-                    }
-                    final ErrorDescription desc = errors.get(0);
-                    throw new SLParseError(
-                            source,
-                            desc.line,
-                            desc.column,
-                            desc.length,
-                            msg.toString());
-                }
+        this.Uri();
+        if (this.errors.size() > 0) {
+            StringBuilder msg = new StringBuilder("Error(s) parsing script:\u005cn");
+            for (ErrorDescription error : this.errors) {
+                msg.append(error.message).append("\u005cn");
+            }
+            final ErrorDescription desc = errors.get(0);
+            throw new SLParseError(
+                source,
+                desc.line,
+                desc.column,
+                desc.length,
+                msg.toString());
+        }
         return this.factory.getAllFunctions();
     }
 
@@ -126,7 +126,7 @@ public class Parser implements ParserConstants {
 
 
 // Parse a compilation unit
-//       translationUnit ::= {function}
+//       Uri ::= {Function}+
   final public void Uri() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case FUNCTION:
@@ -150,7 +150,7 @@ public class Parser implements ParserConstants {
   }
 
 // Parse a function
-//      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN block
+//      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN Block
   final public void Function() throws ParseException {
     try {
       jj_consume_token(FUNCTION);
@@ -190,7 +190,7 @@ public class Parser implements ParserConstants {
   }
 
 // Parse a block
-//      Block ::= LCURLY {blockStatement} RCURLY
+//      Block ::= LCURLY {Statement} RCURLY
   final public SLStatementNode Block(boolean inLoop) throws ParseException {
     SLStatementNode node = null;
     List<SLStatementNode> body = new ArrayList<SLStatementNode>();
@@ -230,15 +230,14 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-//
-//
 // Parse a statement
-//     statement ::= block
-//                | IF parExpression statement [ELSE statement]
-//                | WHILE parExpression statement
-//                | RETURN [expression] SEMI
-//                | SEMI
-//                | expression SEMI // TODO validate side effects
+//     Statement ::= WHILE LPAREN Expression RPAREN Block
+//                 | BREAK SEMI
+//                 | CONTINUE SEMI
+//                 | IF LPAREN Expression RPAREN Block [ELSE Block]
+//                 | RETURN [Expression] SEMI
+//                 | Expression SEMI
+//                 | DEBUGGER SEMI
   final public SLStatementNode Statement(boolean inLoop) throws ParseException {
     SLStatementNode result = null;
     SLExpressionNode expr = null;
@@ -330,6 +329,7 @@ public class Parser implements ParserConstants {
   }
 
 // Parse an expression
+//     Expression ::= LogicTerm {LOR LogicTerm}
   final public SLExpressionNode Expression() throws ParseException {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -357,6 +357,8 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse a logicTerm
+//     LogicTerm ::= LogicFactor {LAND LogicFactor}
   final public SLExpressionNode LogicTerm() throws ParseException {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -384,6 +386,8 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse a logicFactor
+//     LogicFactor ::= Arithmetic [(LT|LE|GT|GE|EQUAL|NOT_EQUAL) Arithmetic]
   final public SLExpressionNode LogicFactor() throws ParseException {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -435,6 +439,8 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse an arithmetic
+//     Arithmetic ::= Term {(PLUS|MINUS) Term}
   final public SLExpressionNode Arithmetic() throws ParseException {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -474,6 +480,8 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse a term
+//     Term ::= Factor {(STAR|DIV) Factor}
   final public SLExpressionNode Term() throws ParseException {
    SLExpressionNode result = null;
    SLExpressionNode right = null;
@@ -513,6 +521,11 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse a factor
+//     Factor ::= IDENTIFIER (MemberExpression)?
+//              | STRING_LITERAL
+//              | NUMERIC_LITERAL
+//              | LPAREN Expression RPAREN
   final public SLExpressionNode Factor() throws ParseException {
     SLExpressionNode result = null;
     try {
@@ -561,6 +574,14 @@ public class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
+// Parse a memberExpression
+//     MemberExpression ::= (
+//                            LPAREN [Expression {COMMA Expression}] RPAREN
+//                          | ASSIGN Expression
+//                          | DOT IDENTIFIER
+//                          | LBRACK Expression RBRACK
+//                          )
+//                          [MemberExpression]
   final public SLExpressionNode MemberExpression(SLExpressionNode r,
                                     SLExpressionNode assignmentReceiver,
                                     SLExpressionNode assignmentName) throws ParseException {

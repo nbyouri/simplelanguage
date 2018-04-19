@@ -73,7 +73,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void asFunction() throws Exception {
-        String scriptText = "function test() {\n" + "    println(\"Called!\");\n" + "}\n";
+        String scriptText = "def test() {\n" + "    println(\"Called!\");\n" + "}\n";
         context.eval("sl", scriptText);
         Value main = context.lookup("sl", "test");
         Runnable runnable = main.as(Runnable.class);
@@ -84,7 +84,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void asFunctionWithArg() throws Exception {
-        String scriptText = "function values(a, b) {\n" + //
+        String scriptText = "def values(a, b) {\n" + //
                         "  println(\"Called with \" + a + \" and \" + b);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -110,7 +110,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void asFunctionWithArr() throws Exception {
-        String scriptText = "function values(a, b) {\n" + //
+        String scriptText = "def values(a, b) {\n" + //
                         "  println(\"Called with \" + a[0] + a[1] + \" and \" + b);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -122,7 +122,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void asFunctionWithVarArgs() throws Exception {
-        String scriptText = "function values(a, b) {\n" + //
+        String scriptText = "def values(a, b) {\n" + //
                         "  println(\"Called with \" + a + \" and \" + b);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -135,7 +135,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void asFunctionWithArgVarArgs() throws Exception {
-        String scriptText = "function values(a, b, c) {\n" + //
+        String scriptText = "def values(a, b, c) {\n" + //
                         "  println(\"Called with \" + a + \" and \" + b + c);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -148,7 +148,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairs() {
-        String scriptText = "function values(sum, k, v) {\n" + //
+        String scriptText = "def values(sum, k, v) {\n" + //
                         "  obj = new();\n" + //
                         "  obj.key = k;\n" + //
                         "  obj.value = v;\n" + //
@@ -171,7 +171,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairsFunctionalInterface() {
-        String scriptText = "function values(sum, k, v) {\n" + //
+        String scriptText = "def values(sum, k, v) {\n" + //
                         "  obj = new();\n" + //
                         "  obj.key = k;\n" + //
                         "  obj.value = v;\n" + //
@@ -193,7 +193,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairsFunctionalRawInterface() {
-        String scriptText = "function values(sum, k, v) {\n" + //
+        String scriptText = "def values(sum, k, v) {\n" + //
                         "  obj = new();\n" + //
                         "  obj.key = k;\n" + //
                         "  obj.value = v;\n" + //
@@ -215,13 +215,13 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairsIndirect() {
-        String scriptText = "function values(sum, k, v) {\n" + //
+        String scriptText = "def values(sum, k, v) {\n" + //
                         "  obj = new();\n" + //
                         "  obj.key = k;\n" + //
                         "  obj.value = v;\n" + //
                         "  return sum.sum(obj);\n" + //
                         "}\n" + //
-                        "function create() {\n" + //
+                        "def create() {\n" + //
                         "  obj = new();\n" + //
                         "  obj.doSum1 = values;\n" + //
                         "  obj.doSum2 = values;\n" + //
@@ -243,7 +243,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairsInArray() {
-        String scriptText = "function values(sum, arr) {\n" + //
+        String scriptText = "def values(sum, arr) {\n" + //
                         "  sum.sumArray(arr);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -262,7 +262,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairsInArrayOfArray() {
-        String scriptText = "function values(sum, arr) {\n" + //
+        String scriptText = "def values(sum, arr) {\n" + //
                         "  sum.sumArrayArray(arr);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -285,7 +285,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumMapInArrayOfArray() {
-        String scriptText = "function values(sum, arr) {\n" + //
+        String scriptText = "def values(sum, arr) {\n" + //
                         "  sum.sumArrayMap(arr);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -308,7 +308,7 @@ public class SLJavaInteropTest {
 
     @Test
     public void sumPairInMapOfArray() {
-        String scriptText = "function values(sum, arr) {\n" + //
+        String scriptText = "def values(sum, arr) {\n" + //
                         "  sum.sumMapArray(arr);\n" + //
                         "}\n"; //
         context.eval("sl", scriptText);
@@ -330,10 +330,10 @@ public class SLJavaInteropTest {
 
     @Test
     public void accessJavaMap() {
-        String scriptText = "function write(map, key, value) {\n" +
+        String scriptText = "def write(map, key, value) {\n" +
                         "  map.put(key, value);\n" +
                         "}\n" +
-                        "function read(map, key) {\n" +
+                        "def read(map, key) {\n" +
                         "  return map.get(key);\n" +
                         "}\n";
         context.eval("sl", scriptText);

@@ -1,4 +1,4 @@
-function main() {  
+def main() {  
   println("<");
   println(4 < 20);  
   println(40 < 2);  

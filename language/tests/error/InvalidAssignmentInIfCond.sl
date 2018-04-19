@@ -1,8 +1,8 @@
-function double(x) {
+def double(x) {
   return 2 * x;
 }
 
-function main() {
+def main() {
   if (double(2) = 4) {
     42;
   }

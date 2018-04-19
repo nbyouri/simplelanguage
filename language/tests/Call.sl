@@ -1,10 +1,10 @@
-function ret(a) { return a; } 
-function dub(a) { return a * 2; } 
-function inc(a) { return a + 1; } 
-function dec(a) { return a - 1; } 
-function call(f, v) { return f(v); }
+def ret(a) { return a; } 
+def dub(a) { return a * 2; } 
+def inc(a) { return a + 1; } 
+def dec(a) { return a - 1; } 
+def call(f, v) { return f(v); }
  
-function main() {  
+def main() {  
   println(ret(42));
   println(dub(21));
   println(inc(41));

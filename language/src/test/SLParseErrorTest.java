@@ -65,7 +65,7 @@ public class SLParseErrorTest {
     @Test
     public void testParseError() throws IOException {
         try {
-            final Source src = Source.newBuilder("sl", "function testSyntaxError(a) {break;} function main() {return testSyntaxError;}", "testSyntaxError.sl").build();
+            final Source src = Source.newBuilder("sl", "def testSyntaxError(a) {break;} def main() {return testSyntaxError;}", "testSyntaxError.sl").build();
             context.eval(src);
             Assert.assertTrue("Should not reach here.", false);
         } catch (PolyglotException e) {

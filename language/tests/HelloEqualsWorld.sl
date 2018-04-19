@@ -1,4 +1,4 @@
-function doIt(a) {
+def doIt(a) {
   println("Initial stack trace:");
   println(stacktrace());
   
@@ -13,7 +13,7 @@ function doIt(a) {
 //  readln();
 }
 
-function main() {
+def main() {
   i = 0;
   while (i < 10) {
     doIt(i);

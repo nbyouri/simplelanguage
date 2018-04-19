@@ -99,7 +99,7 @@ public class SLJavaInteropConversionTest {
 
     @Test
     public void testGR7318Object() throws Exception {
-        String sourceText = "function test(validator) {\n" +
+        String sourceText = "def test(validator) {\n" +
                         "  obj = new();\n" +
                         "  obj.a = new();\n" +
                         "  obj.b = new();\n" +
@@ -115,7 +115,7 @@ public class SLJavaInteropConversionTest {
 
     @Test
     public void testGR7318Map() throws Exception {
-        String sourceText = "function test(validator) {\n" +
+        String sourceText = "def test(validator) {\n" +
                         "  obj = new();\n" +
                         "  obj.a = new();\n" +
                         "  obj.b = new();\n" +
@@ -131,7 +131,7 @@ public class SLJavaInteropConversionTest {
 
     @Test
     public void testGR7318List() throws Exception {
-        String sourceText = "function test(validator, array) {\n" +
+        String sourceText = "def test(validator, array) {\n" +
                         "  array[0] = new();\n" +
                         "  array[1] = new();\n" +
                         "  return validator.validateList(array, array);\n" +

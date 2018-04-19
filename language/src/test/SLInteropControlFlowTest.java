@@ -65,7 +65,7 @@ public class SLInteropControlFlowTest {
 
     @Test
     public void testWhile() throws IOException {
-        final Source src = Source.newBuilder("sl", "function testWhile(a) {while(a) {break;}} function main() {return testWhile;}", "testWhile.sl").build();
+        final Source src = Source.newBuilder("sl", "def testWhile(a) {while(a) {break;}} def main() {return testWhile;}", "testWhile.sl").build();
         final Value fnc = context.eval(src);
         Assert.assertTrue(fnc.canExecute());
         ProxyPrimitive boolProxy = () -> false;
@@ -74,7 +74,7 @@ public class SLInteropControlFlowTest {
 
     @Test
     public void testIf() throws IOException {
-        final Source src = Source.newBuilder("sl", "function testIf(a) {if(a) {return 1;} else {return 0;}} function main() {return testIf;}", "testIf.sl").build();
+        final Source src = Source.newBuilder("sl", "def testIf(a) {if(a) {return 1;} else {return 0;}} def main() {return testIf;}", "testIf.sl").build();
         final Value fnc = context.eval(src);
         ProxyPrimitive boolProxy = () -> false;
         fnc.execute(boolProxy);

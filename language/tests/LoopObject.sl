@@ -1,4 +1,4 @@
-function loop(n) {
+def loop(n) {
   obj = new();
   obj.i = 0;  
   while (obj.i < n) {  
@@ -7,7 +7,7 @@ function loop(n) {
   return obj.i;
 }  
 
-function main() {
+def main() {
   i = 0;
   while (i < 20) {
     loop(1000);

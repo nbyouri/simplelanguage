@@ -79,25 +79,25 @@ public class SLExceptionTest {
 
     @Test
     public void testExceptions() {
-        assertException(true, "function main() { x = 1 / (1 == 1); }", "main");
-        assertException(true, "function foo() { return 1 / \"foo\"; } function main() { foo(); }", "foo", "main");
-        assertException(true, "function foo() { bar(); } function bar() { return 1 / \"foo\"; } function main() { foo(); }", "bar", "foo", "main");
-        assertException(true, "function foo() { bar1(); bar2(); } function bar1() { return 1; } function bar2() { return \"foo\" / 1; } function main() { foo(); }", "bar2", "foo", "main");
+        assertException(true, "def main() { x = 1 / (1 == 1); }", "main");
+        assertException(true, "def foo() { return 1 / \"foo\"; } def main() { foo(); }", "foo", "main");
+        assertException(true, "def foo() { bar(); } def bar() { return 1 / \"foo\"; } def main() { foo(); }", "bar", "foo", "main");
+        assertException(true, "def foo() { bar1(); bar2(); } def bar1() { return 1; } def bar2() { return \"foo\" / 1; } def main() { foo(); }", "bar2", "foo", "main");
     }
 
     @Test
     public void testNonMain() {
-        assertException(false, "function foo(z) { x = 1 / (1==1); } function main() { return foo; }", "foo");
+        assertException(false, "def foo(z) { x = 1 / (1==1); } def main() { return foo; }", "foo");
     }
 
     @Test
     public void testThroughProxy() {
-        assertException(false, "function bar() { x = 1 / (1==1); } function foo(z) { z(bar); } function main() { return foo; }", "bar", null, null, "foo");
+        assertException(false, "def bar() { x = 1 / (1==1); } def foo(z) { z(bar); } def main() { return foo; }", "bar", null, null, "foo");
     }
 
     @Test
     public void testHostException() {
-        assertHostException("function foo(z) { z(1); } function main() { return foo; }", null, "foo");
+        assertHostException("def foo(z) { z(1); } def main() { return foo; }", null, "foo");
     }
 
     private void assertException(boolean failImmediately, String source, String... expectedFrames) {
@@ -160,18 +160,18 @@ public class SLExceptionTest {
     @Test
     public void testGuestLanguageError() {
         try {
-            String source = "function bar() { x = 1 / \"asdf\"; }\n" +
-                            "function foo() { return bar(); }\n" +
-                            "function main() { foo(); }";
+            String source = "def bar() { x = 1 / \"asdf\"; }\n" +
+                            "def foo() { return bar(); }\n" +
+                            "def main() { foo(); }";
             ctx.eval(Source.newBuilder("sl", source, "script.sl").buildLiteral());
             fail();
         } catch (PolyglotException e) {
             assertTrue(e.isGuestException());
 
             Iterator<StackFrame> frames = e.getPolyglotStackTrace().iterator();
-            assertGuestFrame(frames, "sl", "bar", "script.sl", 21, 31);
-            assertGuestFrame(frames, "sl", "foo", "script.sl", 59, 64);
-            assertGuestFrame(frames, "sl", "main", "script.sl", 86, 91);
+            assertGuestFrame(frames, "sl", "bar", "script.sl", 16, 26);
+            assertGuestFrame(frames, "sl", "foo", "script.sl", 49, 54);
+            assertGuestFrame(frames, "sl", "main", "script.sl", 71, 76);
             assertHostFrame(frames, Context.class.getName(), "eval");
             assertHostFrame(frames, SLExceptionTest.class.getName(), "testGuestLanguageError");
 
@@ -213,7 +213,7 @@ public class SLExceptionTest {
 
     @Test
     public void testProxyGuestLanguageStack() {
-        Value bar = ctx.eval("sl", "function foo(f) { f(); } function bar(f) { return foo(f); } function main() { return bar; }");
+        Value bar = ctx.eval("sl", "def foo(f) { f(); } def bar(f) { return foo(f); } def main() { return bar; }");
 
         TestProxy proxy = new TestProxy(3, bar);
         try {
@@ -235,15 +235,15 @@ public class SLExceptionTest {
         Iterator<StackFrame> frames = e.getPolyglotStackTrace().iterator();
         assertHostFrame(frames, TestProxy.class.getName(), "execute");
         for (int i = 0; i < 2; i++) {
-            assertGuestFrame(frames, "sl", "foo", "Unnamed", 18, 21);
-            assertGuestFrame(frames, "sl", "bar", "Unnamed", 50, 56);
+            assertGuestFrame(frames, "sl", "foo", "Unnamed", 13, 16);
+            assertGuestFrame(frames, "sl", "bar", "Unnamed", 40, 46);
 
             assertHostFrame(frames, Value.class.getName(), "execute");
             assertHostFrame(frames, TestProxy.class.getName(), "execute");
         }
 
-        assertGuestFrame(frames, "sl", "foo", "Unnamed", 18, 21);
-        assertGuestFrame(frames, "sl", "bar", "Unnamed", 50, 56);
+        assertGuestFrame(frames, "sl", "foo", "Unnamed", 13, 16);
+        assertGuestFrame(frames, "sl", "bar", "Unnamed", 40, 46);
 
         assertHostFrame(frames, Value.class.getName(), "execute");
         assertHostFrame(frames, SLExceptionTest.class.getName(), "testProxyGuestLanguageStack");

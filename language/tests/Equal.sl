@@ -1,8 +1,8 @@
-function e(a, b) {
+def e(a, b) {
   return a == b;
 }
 
-function main() {  
+def main() {  
   println(e(4, 4));  
   println(e(3, "aaa"));  
   println(e(4, 4));  

@@ -1,4 +1,4 @@
-function main() {
+def main() {
   t = 10 == 10; // true
   f = 10 != 10; // false
   println(left(f) && right(f));
@@ -12,12 +12,12 @@ function main() {
   println(left(t) || right(t));
 }
 
-function left(x) {
+def left(x) {
   println("left");
   return x;
 }
 
-function right(x) {
+def right(x) {
   println("right");
   return x;
 }

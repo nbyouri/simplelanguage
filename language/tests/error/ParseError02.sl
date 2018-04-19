@@ -1,4 +1,4 @@
-function test(n) {
+def test(n) {
   a = 1;
   if (a > 0) {
     b = 10;
@@ -18,6 +18,6 @@ function test(n) {
   println(b);
   println(a);
 }
-function main() {
+def main() {
   test(\"n_n\");
 }
