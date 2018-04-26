@@ -210,6 +210,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
     protected CallTarget parse(ParsingRequest request) throws Exception {
         Source source = request.getSource();
         Map<String, SLRootNode> functions;
+        Map<String, DynamicObject> classes;
         /*
          * Parse the provided source. At this point, we do not have a SLContext yet. Registration of
          * the functions with the SLContext happens lazily in SLEvalRootNode.
@@ -218,6 +219,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
             Parser p = new Parser(source.getInputStream());
             try {
                 functions = p.parseUri(this, source);
+                classes = p.getClasses();
             } catch (ParseException e) {
                 throw new IOException("Failed to parse !" + e.getMessage());
             }
@@ -237,6 +239,7 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
             Parser p = new Parser(decoratedSource.getInputStream());
             try {
                 functions = p.parseUri(this, decoratedSource);
+                classes = p.getClasses();
             } catch (ParseException e) {
                 throw new IOException("Failed to parse !" + e.getMessage());
             }
@@ -250,13 +253,13 @@ public final class SLLanguage extends TruffleLanguage<SLContext> {
              * we cannot use the original SLRootNode for the main function. Instead, we create a new
              * SLEvalRootNode that does everything we need.
              */
-            evalMain = new SLEvalRootNode(this, main.getFrameDescriptor(), main.getBodyNode(), main.getSourceSection(), main.getName(), functions);
+            evalMain = new SLEvalRootNode(this, main.getFrameDescriptor(), main.getBodyNode(), main.getSourceSection(), main.getName(), functions, classes);
         } else {
             /*
              * Even without a main function, "evaluating" the parsed source needs to register the
              * functions into the SLContext.
              */
-            evalMain = new SLEvalRootNode(this, null, null, null, "[no_main]", functions);
+            evalMain = new SLEvalRootNode(this, null, null, null, "[no_main]", functions, classes);
         }
 //        NodeUtil.printCompactTree(System.out, evalMain);
         return Truffle.getRuntime().createCallTarget(evalMain);

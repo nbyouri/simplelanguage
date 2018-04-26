@@ -45,8 +45,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import builtins.*;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -64,22 +67,6 @@ import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import uri.SLLanguage;
-import builtins.SLBuiltinNode;
-import builtins.SLDefineFunctionBuiltinFactory;
-import builtins.SLEvalBuiltinFactory;
-import builtins.SLGetSizeBuiltinFactory;
-import builtins.SLHasSizeBuiltinFactory;
-import builtins.SLHelloEqualsWorldBuiltinFactory;
-import builtins.SLImportBuiltinFactory;
-import builtins.SLIsExecutableBuiltinFactory;
-import builtins.SLIsNullBuiltinFactory;
-import builtins.SLNanoTimeBuiltinFactory;
-import builtins.SLNewObjectBuiltinFactory;
-import builtins.SLPrintlnBuiltin;
-import builtins.SLPrintlnBuiltinFactory;
-import builtins.SLReadlnBuiltin;
-import builtins.SLReadlnBuiltinFactory;
-import builtins.SLStackTraceBuiltinFactory;
 import nodes.SLExpressionNode;
 import nodes.SLRootNode;
 import nodes.local.SLReadArgumentNode;
@@ -101,6 +88,7 @@ public final class SLContext {
     private final BufferedReader input;
     private final PrintWriter output;
     private final SLFunctionRegistry functionRegistry;
+    private final SLClassRegistry classRegistery;
     private final Shape emptyShape;
     private final SLLanguage language;
     private final AllocationReporter allocationReporter;
@@ -113,6 +101,7 @@ public final class SLContext {
         this.language = language;
         this.allocationReporter = env.lookup(AllocationReporter.class);
         this.functionRegistry = new SLFunctionRegistry(language);
+        this.classRegistery = new SLClassRegistry(language);
         this.topScopes = Collections.singleton(Scope.newBuilder("global", functionRegistry.getFunctionsObject()).build());
         installBuiltins();
         for (NodeFactory<? extends SLBuiltinNode> builtin : externalBuiltins) {
@@ -144,6 +133,10 @@ public final class SLContext {
         return functionRegistry;
     }
 
+    public SLClassRegistry getClassRegistry() {
+        return classRegistery;
+    }
+
     public Iterable<Scope> getTopScopes() {
         return topScopes;
     }
@@ -159,6 +152,7 @@ public final class SLContext {
         installBuiltin(SLDefineFunctionBuiltinFactory.getInstance());
         installBuiltin(SLStackTraceBuiltinFactory.getInstance());
         installBuiltin(SLHelloEqualsWorldBuiltinFactory.getInstance());
+        installBuiltin(SLNewClassBuiltinFactory.getInstance());
         installBuiltin(SLNewObjectBuiltinFactory.getInstance());
         installBuiltin(SLEvalBuiltinFactory.getInstance());
         installBuiltin(SLImportBuiltinFactory.getInstance());
@@ -224,10 +218,19 @@ public final class SLContext {
      * when they are first stored, i.e., the store triggers a shape change of the object.
      */
     public DynamicObject createObject() {
-        DynamicObject object = null;
+        DynamicObject object;
         allocationReporter.onEnter(null, 0, AllocationReporter.SIZE_UNKNOWN);
         object = emptyShape.newInstance();
         allocationReporter.onReturnValue(object, 0, AllocationReporter.SIZE_UNKNOWN);
+        return object;
+    }
+
+    public DynamicObject getClass(String name) {
+        DynamicObject object;
+        object = getClassRegistry().lookup(name);
+        if (object == null) {
+            throw new IllegalStateException("Undefined class");
+        }
         return object;
     }
 

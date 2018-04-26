@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,48 +38,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package builtins;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.PolyglotEngine;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.NodeInfo;
+import nodes.SLExpressionNode;
+import nodes.call.SLDispatchNode;
+import nodes.call.SLDispatchNodeGen;
+import nodes.call.SLInvokeNode;
+import runtime.SLContext;
+import runtime.SLFunction;
 
-import static org.junit.Assert.assertEquals;
+/**
+ * Built-in function to create a new object. Objects in SL are simply made up of name/value pairs.
+ */
+@NodeInfo(shortName = "newclass") // TODO syntax should be a = new A(arg1, arg2)
+public abstract class SLNewClassBuiltin extends SLBuiltinNode {
 
-public class SLSimpleTest {
+    @CompilationFinal SLContext context;
 
-    private PolyglotEngine engine;
-    private PolyglotEngine.Value obj;
-
-    @Before
-    public void initEngine() throws Exception {
-        engine = PolyglotEngine.newBuilder().build();
-        // @formatter:off
-        engine.eval(
-            Source.newBuilder("\n" +
-                "def main() { a = newclass(\"Thing\"); return c(); }\n" +
-                "class Thing extends Ass {\n" +
-                    "def Thing() { this.var = 2; }\n" +
-                    "def foo() { return 2; }\n" +
-                    "def c() { return this.foo(); }\n" +
-                "}\n").
-            name("obj.sl").
-            mimeType("application/x-sl").
-            build()
-        );
-        // @formatter:on
-        obj = engine.findGlobalSymbol("main");
-    }
-
-    @After
-    public void dispose() {
-        engine.dispose();
-    }
-
-    @Test
-    public void obj() throws Exception {
-        Number ret = obj.execute().as(Number.class);
-        assertEquals(2, ret.intValue());
+    @Specialization
+    public Object newObject(String name) {
+        if (context != getContext()) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            context = getContext();
+        }
+        // XXX execute constructor to propagate fields and methods
+        SLFunction ctor = context.getFunctionRegistry().lookup(name, true);
+        SLDispatchNode sdn = SLDispatchNodeGen.create();
+        sdn.executeDispatch(ctor, new Object[0]); // TODO deal with arguments
+        return context.getClass(name);
     }
 }

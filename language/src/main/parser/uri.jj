@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.object.DynamicObject;
 import uri.SLLanguage;
 import nodes.SLExpressionNode;
 import nodes.SLRootNode;
@@ -44,6 +45,10 @@ public class Parser {
                 msg.toString());
         }
         return this.factory.getAllFunctions();
+    }
+
+    public Map<String, DynamicObject> getClasses() {
+        return this.factory.getAllClasses();
     }
 
     final class ErrorDescription {
@@ -256,19 +261,18 @@ void Uri(): {
 //      Class ::= CLASS IDENTIFIER [EXTENDS IDENTIFIER] LCURLY {MemberDecl} {Function} RCURLY
 void Class(): {
     SLExpressionNode member = null;
+    Token extendToken = null;
+    SLStatementNode fields = null;
 }
 {
     try {
         <CLASS>
-        <IDENTIFIER>
+        <IDENTIFIER>                { Token identifierToken = token; }
         [
             <EXTENDS>
-            <IDENTIFIER>
+            <IDENTIFIER>            { extendToken = token; }
         ]
-        <LCURLY>
-        (
-                member = MemberDecl()
-        )*
+        <LCURLY>                    { factory.startClass(identifierToken, extendToken); }
         (
             Function()
         )*
@@ -276,23 +280,9 @@ void Class(): {
     } catch (Exception e) {
         throw new ParseException("Failed to parse class");
     }
-//    { factory.finishClass(); }
+    { factory.finishClass(); }
 }
 
-// Parse a MemberDecl
-//      MemberDecl ::= IDENTIFIER ["=" Expression] ";"
-SLExpressionNode MemberDecl(): {
-    SLExpressionNode expr = null;
-}
-{
-    <IDENTIFIER>
-    [
-        <ASSIGN>
-        expr = Expression()
-    ]
-    <SEMI>
-    { return expr; }
-}
 
 // Parse a function
 //      Function ::= FUNCTION IDENTIFIER LPAREN [IDENTIFIER {COMMA IDENTIFIER}] RPAREN Block
@@ -507,7 +497,8 @@ SLExpressionNode Term(): {
 }
 
 // Parse a factor
-//     Factor ::= IDENTIFIER (MemberExpression)?
+//     Factor ::= THIS [MemberExpression]
+//              | IDENTIFIER (MemberExpression)?
 //              | STRING_LITERAL
 //              | NUMERIC_LITERAL
 //              | LPAREN Expression RPAREN
@@ -516,7 +507,7 @@ SLExpressionNode Factor(): {
 }
 {
     try {
-            <IDENTIFIER> { SLExpressionNode assignmentName = factory.createStringLiteral(token, false); }
+        <IDENTIFIER> { SLExpressionNode assignmentName = factory.createStringLiteral(token, false); }
             (
                 result = MemberExpression(null, null, assignmentName)
                 | { result = factory.createRead(assignmentName); }
@@ -577,9 +568,9 @@ SLExpressionNode MemberExpression(SLExpressionNode r,
               if (assignmentName == null) {
                 SemErr("invalid assignment target");
               } else if (assignmentReceiver == null) {
-                result = factory.createAssignment(assignmentName, value);
+                result = factory.createAssignment(assignmentName, value, false);
               } else {
-                result = factory.createWriteProperty(assignmentReceiver, assignmentName, value);
+                result = factory.createWriteProperty(assignmentReceiver, assignmentName, value, false);
               } }
 
         | <DOT> { if (receiver == null) {

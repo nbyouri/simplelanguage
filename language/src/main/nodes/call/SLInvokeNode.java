@@ -79,11 +79,17 @@ public final class SLInvokeNode extends SLExpressionNode {
          * ExplodeLoop annotation on the method. The compiler assertion below illustrates that the
          * array length is really constant.
          */
-        CompilerAsserts.compilationConstant(argumentNodes.length);
+        Object[] argumentValues;
+        if (argumentNodes == null) {
+            argumentValues = new Object[0];
+        } else {
+            CompilerAsserts.compilationConstant(argumentNodes.length);
 
-        Object[] argumentValues = new Object[argumentNodes.length];
-        for (int i = 0; i < argumentNodes.length; i++) {
-            argumentValues[i] = argumentNodes[i].executeGeneric(frame);
+            argumentValues = new Object[argumentNodes.length];
+
+            for (int i = 0; i < argumentNodes.length; i++) {
+                argumentValues[i] = argumentNodes[i].executeGeneric(frame);
+            }
         }
         return dispatchNode.executeDispatch(function, argumentValues);
     }

@@ -47,6 +47,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.TruffleLanguage.ContextReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 import uri.SLLanguage;
 import runtime.SLContext;
@@ -66,13 +67,18 @@ import runtime.SLNull;
 public final class SLEvalRootNode extends SLRootNode {
 
     private final Map<String, SLRootNode> functions;
+    private final Map<String, DynamicObject> classes;
     @CompilationFinal private boolean registered;
 
     private final ContextReference<SLContext> reference;
 
-    public SLEvalRootNode(SLLanguage language, FrameDescriptor frameDescriptor, SLExpressionNode bodyNode, SourceSection sourceSection, String name, Map<String, SLRootNode> functions) {
+    public SLEvalRootNode(SLLanguage language, FrameDescriptor frameDescriptor,
+                          SLExpressionNode bodyNode, SourceSection sourceSection,
+                          String name, Map<String, SLRootNode> functions,
+                          Map<String, DynamicObject> classes) {
         super(language, frameDescriptor, bodyNode, sourceSection, name);
         this.functions = functions;
+        this.classes = classes;
         this.reference = language.getContextReference();
     }
 
@@ -83,6 +89,7 @@ public final class SLEvalRootNode extends SLRootNode {
             /* Function registration is a slow-path operation that must not be compiled. */
             CompilerDirectives.transferToInterpreterAndInvalidate();
             reference.get().getFunctionRegistry().register(functions);
+            reference.get().getClassRegistry().register(classes);
             registered = true;
         }
 

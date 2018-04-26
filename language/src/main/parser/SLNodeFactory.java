@@ -48,8 +48,10 @@ import java.util.Map;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+import runtime.SLContext;
 import uri.SLLanguage;
 import nodes.SLBinaryNode;
 import nodes.SLExpressionNode;
@@ -117,6 +119,7 @@ public class SLNodeFactory {
     /* State while parsing a source unit. */
     private final Source source;
     private final Map<String, SLRootNode> allFunctions;
+    private final Map<String, DynamicObject> allClasses;
 
     /* State while parsing a function. */
     private int functionStartPos;
@@ -130,14 +133,50 @@ public class SLNodeFactory {
     private LexicalScope lexicalScope;
     private final SLLanguage language;
 
+    /* State while parsing a class. */
+    private SLContext context;
+    private String className;
+    private DynamicObject classObject;
+    private LexicalScope classLexicalScope;
+    private FrameDescriptor classFrameDescriptor;
+
     public SLNodeFactory(SLLanguage language, Source source) {
         this.language = language;
         this.source = source;
         this.allFunctions = new HashMap<>();
+        this.allClasses = new HashMap<>();
+        this.context = language.getContextReference().get();
     }
 
     public Map<String, SLRootNode> getAllFunctions() {
         return allFunctions;
+    }
+
+    public Map<String, DynamicObject> getAllClasses() {
+        return allClasses;
+    }
+
+    public void startClass(Token nameToken, Token extendToken) {
+        classLexicalScope = new LexicalScope(classLexicalScope);
+        className = nameToken.val;
+        classFrameDescriptor = new FrameDescriptor();
+        classObject = context.createObject();
+
+        if (extendToken != null) {
+            // deal with extends TODO
+        }
+
+        FrameSlot frameSlot = classFrameDescriptor.findOrAddFrameSlot("this");
+        classLexicalScope.locals.put("this", frameSlot);
+        // TODO this should refer to classObject
+    }
+
+    public void finishClass() {
+        allClasses.put(className, classObject);
+        className = null;
+        classObject = null;
+        classFrameDescriptor = null;
+        classLexicalScope = null;
     }
 
     public void startFunction(Token nameToken, int bodyStartPos) {
@@ -152,6 +191,10 @@ public class SLNodeFactory {
         functionName = nameToken.val;
         functionBodyStartPos = bodyStartPos;
         frameDescriptor = new FrameDescriptor();
+        if (classFrameDescriptor != null) {
+            for (FrameSlot slot : classFrameDescriptor.getSlots())
+                frameDescriptor.addFrameSlot(slot.getIdentifier());
+        }
         methodNodes = new ArrayList<>();
         startBlock();
     }
@@ -163,7 +206,7 @@ public class SLNodeFactory {
          * specialized.
          */
         final SLReadArgumentNode readArg = new SLReadArgumentNode(parameterCount);
-        SLExpressionNode assignment = createAssignment(createStringLiteral(nameToken, false), readArg);
+        SLExpressionNode assignment = createAssignment(createStringLiteral(nameToken, false), readArg, false);
         methodNodes.add(assignment);
         parameterCount++;
     }
@@ -177,6 +220,7 @@ public class SLNodeFactory {
             final int bodyEndPos = bodyNode.getSourceSection().getCharEndIndex();
             final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
             final SLStatementNode methodBlock = finishBlock(methodNodes, functionBodyStartPos, bodyEndPos - functionBodyStartPos);
+            assert methodBlock != null : "Method block is null!";
             assert lexicalScope == null : "Wrong scoping of blocks in parser";
 
             final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
@@ -194,7 +238,10 @@ public class SLNodeFactory {
     }
 
     public void startBlock() {
-        lexicalScope = new LexicalScope(lexicalScope);
+        if (classLexicalScope != null)
+            lexicalScope = new LexicalScope(classLexicalScope);
+        else
+            lexicalScope = new LexicalScope(lexicalScope);
     }
 
     public SLStatementNode finishBlock(List<SLStatementNode> bodyNodes, int startPos, int length) {
@@ -203,6 +250,32 @@ public class SLNodeFactory {
         if (containsNull(bodyNodes)) {
             return null;
         }
+
+        // add a new object instantiation for this in constructor
+        if (classObject != null && className.equals(functionName) &&
+                !(bodyNodes.get(0) instanceof SLBlockNode)) {
+            // TODO deal with empty body?
+            SLStringLiteralNode nameNode = new SLStringLiteralNode("this");
+            SLInvokeNode valueNode = new SLInvokeNode(new SLFunctionLiteralNode(language, "new"), null);
+            SLStatementNode stmt = createAssignment(nameNode, valueNode, true);
+            bodyNodes.add(0, stmt);
+        }
+
+        // TODO add methods to the class object "this" as function literals for use in other methods
+        // TODO add lexical scope to only add class methods
+        // TODO classObject should mirror the local variable "this"
+        if (classLexicalScope != null && !(bodyNodes.get(0) instanceof SLBlockNode)) {
+            final FrameSlot frameSlot = classLexicalScope.locals.get("this");
+            SLExpressionNode receiverNode = SLReadLocalVariableNodeGen.create(frameSlot);
+//            SLStringLiteralNode receiverNode = new SLStringLiteralNode("this");
+            SLStringLiteralNode nameNode = new SLStringLiteralNode(functionName);
+            // TODO deal with arguments + arguments in newclass()
+            SLFunctionLiteralNode valueNode = new SLFunctionLiteralNode(language, functionName);
+            SLStatementNode stmt = createWriteProperty(receiverNode, nameNode, valueNode, true);
+            bodyNodes.add(stmt);
+//            classObject.define(functionName, valueNode);
+        }
+
 
         List<SLStatementNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
         flattenBlocks(bodyNodes, flattenedNodes);
@@ -435,14 +508,20 @@ public class SLNodeFactory {
      * @param valueNode The value to be assigned
      * @return An SLExpressionNode for the given parameters. null if nameNode or valueNode is null.
      */
-    public SLExpressionNode createAssignment(SLExpressionNode nameNode, SLExpressionNode valueNode) {
+    public SLExpressionNode createAssignment(SLExpressionNode nameNode, SLExpressionNode valueNode, boolean classField) {
         if (nameNode == null || valueNode == null) {
             return null;
         }
 
         String name = ((SLStringLiteralNode) nameNode).executeGeneric(null);
-        FrameSlot frameSlot = frameDescriptor.findOrAddFrameSlot(name);
-        lexicalScope.locals.put(name, frameSlot);
+        FrameSlot frameSlot;
+        if (classField) {
+            frameSlot = classFrameDescriptor.findOrAddFrameSlot(name);
+            classLexicalScope.locals.put(name, frameSlot);
+        } else {
+            frameSlot = frameDescriptor.findOrAddFrameSlot(name);
+            lexicalScope.locals.put(name, frameSlot);
+        }
         final SLExpressionNode result = SLWriteLocalVariableNodeGen.create(valueNode, frameSlot);
 
         if (valueNode.getSourceSection() != null) {
@@ -531,7 +610,7 @@ public class SLNodeFactory {
      *         null.
      */
     public SLExpressionNode createReadProperty(SLExpressionNode receiverNode, SLExpressionNode nameNode) {
-        if (receiverNode == null || nameNode == null) {
+        if (nameNode == null || receiverNode == null) {
             return null;
         }
 
@@ -553,17 +632,18 @@ public class SLNodeFactory {
      * @return An SLExpressionNode for the given parameters. null if receiverNode, nameNode or
      *         valueNode is null.
      */
-    public SLExpressionNode createWriteProperty(SLExpressionNode receiverNode, SLExpressionNode nameNode, SLExpressionNode valueNode) {
+    public SLExpressionNode createWriteProperty(SLExpressionNode receiverNode, SLExpressionNode nameNode, SLExpressionNode valueNode, boolean artificial) {
         if (receiverNode == null || nameNode == null || valueNode == null) {
             return null;
         }
 
         final SLExpressionNode result = SLWritePropertyNodeGen.create(receiverNode, nameNode, valueNode);
 
-        final int start = receiverNode.getSourceSection().getCharIndex();
-        final int length = valueNode.getSourceSection().getCharEndIndex() - start;
-        result.setSourceSection(source.createSection(start, length));
-
+        if (!artificial) {
+            final int start = receiverNode.getSourceSection().getCharIndex();
+            final int length = valueNode.getSourceSection().getCharEndIndex() - start;
+            result.setSourceSection(source.createSection(start, length));
+        }
         return result;
     }
 

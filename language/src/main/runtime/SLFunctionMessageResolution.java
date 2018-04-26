@@ -55,9 +55,6 @@ import nodes.interop.SLTypeToForeignNodeGen;
 /**
  * The class containing all message resolution implementations of {@link SLFunction}.
  */
-/**
- * The class containing all message resolution implementations of {@link SLFunction}.
- */
 @MessageResolution(receiverType = SLFunction.class)
 public class SLFunctionMessageResolution {
     /*

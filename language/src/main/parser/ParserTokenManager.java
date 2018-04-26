@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.object.DynamicObject;
 import uri.SLLanguage;
 import nodes.SLExpressionNode;
 import nodes.SLRootNode;
